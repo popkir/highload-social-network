@@ -51,7 +51,29 @@ class UserModel(Base):
     city = Column(String(255), nullable=False)
 
     def __str__(self):
-        return f"User(id={self.id}, first_name={self.first_name}, last_name={self.last_name}, age={self.age}, biography={self.biography}, city={self.city},  created_at={self.created_at}, edited_at={self.edited_at}, deleted={self.deleted})"
+        return f"User(id={self.id}, first_name={self.first_name}, last_name={self.last_name}, birthday={self.birthday}, biography={self.biography}, city={self.city},  created_at={self.created_at}, edited_at={self.edited_at}, deleted={self.deleted})"
     
     def __repr__(self):
         return self.__str__() 
+    
+class AuthSessionModel(Base):
+    __tablename__ = "auth_session"
+
+    # Technical fields not to be modified by user
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    edited_at = Column(DateTime(timezone=True), onupdate=func.now(), default=func.now())
+
+    # Flag to mark as deleted
+    deleted = Column(Boolean, default=False)
+
+    # Authentication fields
+    user_id = Column(UUID(as_uuid=True), nullable=False)
+    token = Column(String(255), nullable=False)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+
+    def __str__(self):
+        return f"AuthSession(id={self.id}, user_id={self.user_id}, token={self.token}, expires_at={self.expires_at}, created_at={self.created_at}, edited_at={self.edited_at}, deleted={self.deleted})"
+    
+    def __repr__(self):
+        return self.__str__()

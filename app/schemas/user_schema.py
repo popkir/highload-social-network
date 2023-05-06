@@ -13,7 +13,7 @@ class UserBaseSchema(BaseModel):
 class UserCreateSchema(UserBaseSchema):
     password: str 
 
-class UserUpdateSchema(UserCreateSchema):
+class UserUpdateSchema(UserBaseSchema):
     password: str | None = None
     deleted: Any | None = None
 
@@ -28,8 +28,14 @@ class UserUpdateSchema(UserCreateSchema):
         else:
             raise ValidationError('"deleted", if present, must be a boolean')
 
+class UserPublicSchema(UserBaseSchema):
+    id: uuid.UUID
+    age: int
+
 class UserSchema(UserBaseSchema):
     id: uuid.UUID | None = None
     created_at: datetime | None = None
     edited_at: datetime | None = None
     deleted: bool | None = None
+    password_salt: str | None = None
+    password_hash: str | None = None

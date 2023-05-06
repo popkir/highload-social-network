@@ -1,9 +1,15 @@
 import bcrypt
+from datetime import datetime
 from typing import Tuple
+
 from app.db.db import Session
 from app.utils.logger import logger
 from app.models.models import UserModel
-from app.schemas.user_schema import UserCreateSchema, UserUpdateSchema, UserSchema
+from app.schemas.user_schema import UserCreateSchema, UserPublicSchema
+
+
+class UserNotFoundException(Exception):
+    pass
 
 class UserDBHandler():
     @staticmethod
@@ -43,13 +49,34 @@ class UserDBHandler():
     def get_entry_by_id(id: str) -> UserModel:
         try:
             entry = Session.query(UserModel).filter(UserModel.id == id).first()
+            if entry is None:
+                raise UserNotFoundException(f"User with id {id} not found")
+            
         except Exception as e:
             Session.rollback()
             logger.error(f"Error querying entry by id in table {UserModel.__tablename__}: {e}")
             raise e
 
         return entry
-    
+
+    @staticmethod
+    def get_auth_details_by_id(id: str) -> Tuple[str, str]:
+        try:
+            entry = Session\
+                .query(UserModel.password_salt, UserModel.password_hash)\
+                .filter(UserModel.id == id)\
+                .first()
+            
+            if entry is None:
+                raise UserNotFoundException(f"User with id {id} not found")
+            
+            return entry
+
+        except Exception as e:
+            Session.rollback()
+            logger.error(f"Error querying entry by id in table {UserModel.__tablename__}: {e}")
+            raise e
+            
     @staticmethod
     def update_entry(id: str, entry: UserModel) -> bool:
         try:
@@ -74,26 +101,49 @@ class UserDBHandler():
             raise e
 
         return True
-    
+
 class UserManager():
     @staticmethod
-    def generate_salt_and_hash(password: str) -> Tuple[str, str]:
-        salt = bcrypt.gensalt()
-        password_hash = bcrypt.hashpw(password.encode('utf-8'), salt)
-        return salt, password_hash
-
-    @staticmethod
-    def register_user(user: UserCreateSchema):
+    def get_pwd_hash(password: str, salt: str | bytes) -> str:
         try:
+            # Convert salt to bytes
+            if type(salt) == str:
+                salt = salt.encode('utf-8')
+            print(f"using salt: {salt}, type {type(salt)}")
+            
             # Convert password to bytes
             try:
-                password = user.password.encode('utf-8')
+                password = password.encode('utf-8')
             except Exception as e:
                 logger.error(f"Error encoding password as utf-8: {e}")
                 raise e
+            print(f"hashing password: {password}, type {type(password)}")
+            
+            password_hash = bcrypt.hashpw(password, salt)
+            password_hash_str = password_hash.decode('utf-8')
 
+            return password_hash_str
+        
+        except Exception as e:
+            logger.error(f"Error hashing password: {e}")
+            raise e
+    
+    @staticmethod
+    def generate_salt_and_hash(password: str) -> Tuple[str, str]:
+        salt = bcrypt.gensalt()
+        print(f"creating new salt: {salt}, type {type(salt)}")
+        
+        password_hash_str = __class__.get_pwd_hash(password, salt)
+
+        salt_str = salt.decode('utf-8')
+
+        return salt_str, password_hash_str
+
+    @staticmethod
+    def register_user(user: UserCreateSchema) -> UserModel:
+        try:
             # Generate salt and hash
-            salt, password_hash = __class__.generate_salt_and_hash(password)
+            salt, password_hash = __class__.generate_salt_and_hash(user.password)
 
             # Create user model
             user_model = UserModel(
@@ -116,6 +166,35 @@ class UserManager():
             logger.error(f"Error creating user: {e}")
             raise e
 
+    @staticmethod
+    def get_user_by_id(id: str) -> UserPublicSchema:
+        try:
+            # Get user model from db
+            user_model = UserDBHandler.get_entry_by_id(id)
+            
+            # Compute age
+            age = (datetime.now().date() - user_model.birthday).days // 365
 
+            # Create user public schema
+            user = UserPublicSchema(
+                id=user_model.id,
+                first_name=user_model.first_name,
+                last_name=user_model.last_name,
+                age=age,
+                birthday=user_model.birthday,
+                biography=user_model.biography,
+                city=user_model.city
+            )
 
-
+            return user
+        except Exception as e:
+            logger.error(f"Error getting user by id: {e}")
+            raise e
+        
+    @staticmethod
+    def get_auth_details_by_id(id: str) -> Tuple[str, str]:
+        try:
+            return UserDBHandler.get_auth_details_by_id(id)
+        except Exception as e:
+            logger.error(f"Error getting auth details by id: {e}")
+            raise e
