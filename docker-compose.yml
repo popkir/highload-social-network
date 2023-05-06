@@ -3,6 +3,7 @@ version: "3.9"
 services:
   db:
     image: postgres:11
+    # container_name: social-network-postgres
     ports:
       - "5432:5432"
     environment:
@@ -11,6 +12,7 @@ services:
       - POSTGRES_DB=social_network_db
 
   backend:
+    # container_name: social-network-backend
     build:
       context: .
       dockerfile: ./Dockerfile

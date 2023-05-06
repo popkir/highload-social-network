@@ -29,7 +29,7 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-import app.models.crypto_prices as models
+import app.models.models as models
 
 # here target_metadata was equal to None
 target_metadata = models.Base.metadata
