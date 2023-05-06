@@ -1,6 +1,6 @@
 from typing import Any
 from datetime import datetime
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, validator, ValidationError
 import uuid
 
 class TemplateCreateSchema(BaseModel):
@@ -19,7 +19,7 @@ class TemplateUpdateSchema(TemplateCreateSchema):
         elif v in [False, 'false', 'False', 'FALSE', 0, "0"]:
             return False
         else:
-            raise ValueError('"deleted" must be a boolean')
+            raise ValidationError('"deleted" must be a boolean')
 
 class TemplateSchema(TemplateUpdateSchema):
     id: uuid.UUID | None = None

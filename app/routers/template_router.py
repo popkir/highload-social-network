@@ -76,7 +76,7 @@ async def get_all():
 async def get(id: str):
     try: 
         entry = TemplateDBHandler.get_entry_by_id(id)
-        entry_schema = TemplateSchema(entry)
+        entry_schema = TemplateSchema(**entry.__dict__)
         entry_dict = jsonable_encoder(entry_schema.dict())
 
         response = JSONResponse(
