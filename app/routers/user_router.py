@@ -12,7 +12,7 @@ router = APIRouter()
 
 @close_session
 @router.post("/register", response_model=dict)
-async def register(user: UserCreateSchema):
+async def register_user(user: UserCreateSchema):
     try: 
         model = UserManager.register_user(user)
 
@@ -41,7 +41,7 @@ async def register(user: UserCreateSchema):
 
 @close_session
 @router.get("/get/{id}", response_model=dict)
-async def get(id: str):
+async def get_user_by_id(id: str):
     try: 
         user_schema = UserManager.get_user_by_id(id)
         user_dict = jsonable_encoder(user_schema.dict())

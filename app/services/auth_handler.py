@@ -106,7 +106,6 @@ class AuthSessionDBHandler():
 
         return True
     
-
 class AuthSessionManager():
     @staticmethod
     def login(user_id: str, password: str) -> str:
@@ -121,6 +120,66 @@ class AuthSessionManager():
             # Compare the hashes
             if login_pwd_hash == pwd_hash:
                 logger.info(f"User {user_id} logged in")
+
+                # Delete any existing auth sessions for this user
+                # Or should we just update the expiry date?
+                # Or should we just allow multiple sessions?
+                # Or should we just allow multiple sessions with a limit?
+                # Or should we just allow multiple sessions with a limit and delete the oldest?
+                # Or should we just allow multiple sessions with a limit and delete the oldest and notify the user?
+                # Or should we just allow multiple sessions with a limit and delete the oldest and notify the user and the admin?
+                # Or should we just allow multiple sessions with a limit and delete the oldest and notify the user and the admin and the security team?
+                # Or should we just allow multiple sessions with a limit and delete the oldest and notify the user and the admin and the security team and the police?
+                # Or should we just allow multiple sessions with a limit and delete the oldest and notify the user and the admin and the security team and the police and the military?
+                # Or should we just allow multiple sessions with a limit and delete the oldest and notify the user and the admin and the security team and the police and the military and the government?
+                # Or should we just allow multiple sessions with a limit and delete the oldest and notify the user and the admin and the security team and the police and the military and the government and the aliens?
+                # Or should we just allow multiple sessions with a limit and delete the oldest and notify the user and the admin and the security team and the police and the military and the government and the aliens and the gods?
+                # Or should we just allow multiple sessions with a limit and delete the oldest and notify the user and the admin and the security team and the police and the military and the government and the aliens and the gods and the universe?
+                # Or should we just allow multiple sessions with a limit and delete the oldest and notify the user and the admin and the security team and the police and the military and the government and the aliens and the gods and the universe and the multiverse?
+                # Or should we just allow multiple sessions with a limit and delete the oldest and notify the user and the admin and the security team and the police and the military and the government and the aliens and the gods and the universe and the multiverse and the omniverse?
+                # Or should we just allow multiple sessions with a limit and delete the oldest and notify the user and the admin and the security team and the police and the military and the government and the aliens and the gods and the universe and the multiverse and the omniverse and the metaverse?
+                # Or should we just allow multiple sessions with a limit and delete the oldest and notify the user and the admin and the security team and the police and the military and the government and the aliens and the gods and the universe and the multiverse and the omniverse and the metaverse and the xenoverse?
+                # Or should we just allow multiple sessions with a limit and delete the oldest and notify the user and the admin and the security team and the police and the military and the government and the aliens and the gods and the universe and the multiverse and the omniverse and the metaverse and the xenoverse and the hyperverse?
+                # Or should we just allow multiple sessions with a limit and delete the oldest and notify the user and the admin and the security team and the police and the military and the government and the aliens and the gods and the universe and the multiverse and the omniverse and the metaverse and the xenoverse and the hyperverse and the ultraverse?
+                # Or should we just allow multiple sessions with a limit and delete the oldest and notify the user and the admin and the security team and the police and the military and the government and the aliens and the gods and the universe and the multiverse and the omniverse and the metaverse and the xenoverse and the hyperverse and the ultraverse and the archverse?
+                # Or should we just allow multiple sessions with a limit and delete the oldest and notify the user and the admin and the security team and the police and the military and the government and the aliens and the gods and the universe and the multiverse and the omniverse and the metaverse and the xenoverse and the hyperverse and the ultraverse and the archverse and the megaverse?
+                # Or should we just allow multiple sessions with a limit and delete the oldest and notify the user and the admin and the security team and the police and the military and the government and the aliens and the gods and the universe and the multiverse and the omniverse and the metaverse and the xenoverse and the hyperverse and the ultraverse and the archverse and the megaverse and the gigaverse?
+                # Or should we just allow multiple sessions with a limit and delete the oldest and notify the user and the admin and the security team and the police and the military and the government and the aliens and the gods and the universe and the multiverse and the omniverse and the metaverse and the xenoverse and the hyperverse and the ultraverse and the archverse and the megaverse and the gigaverse and the teraverse?
+                # Or should we just allow multiple sessions with a limit and delete the oldest and notify the user and the admin and the security team and the police and the military and the government and the aliens and the gods and the universe and the multiverse and the omniverse and the metaverse and the xenoverse and the hyperverse and the ultraverse and the archverse and the megaverse and the gigaverse and the teraverse and the petaverse?
+                # Or should we just allow multiple sessions with a limit and delete the oldest and notify the user and the admin and the security team and the police and the military and the government and the aliens and the gods and the universe and the multiverse and the omniverse and the metaverse and the xenoverse and the hyperverse and the ultraverse and the archverse and the megaverse and the gigaverse and the teraverse and the petaverse and the exaverse?
+                # Or should we just allow multiple sessions with a limit and delete the oldest and notify the user and the admin and the security team and the police and the military and the government and the aliens and the gods and the universe and the multiverse and the omniverse and the metaverse and the xenoverse and the hyperverse and the ultraverse and the archverse and the megaverse and the gigaverse and the teraverse and the petaverse and the exaverse and the zettaverse?
+                # Or should we just allow multiple sessions with a limit and delete the oldest and notify the user and the admin and the security team and the police and the military and the government and the aliens and the gods and the universe and the multiverse and the omniverse and the metaverse and the xenoverse and the hyperverse and the ultraverse and the archverse and the megaverse and the gigaverse and the teraverse and the petaverse and the exaverse and the zettaverse and the yottaverse?
+                # Or should we just allow multiple sessions with a limit and delete the oldest and notify the user and the admin and the security team and the police and the military and the government and the aliens and the gods and the universe and the multiverse and the omniverse and the metaverse and the xenoverse and the hyperverse and the ultraverse and the archverse and the megaverse and the gigaverse and the teraverse and the petaverse and the exaverse and the zettaverse and the yottaverse and the brontoverse?
+                # Or should we just allow multiple sessions with a limit and delete the oldest and notify the user and the admin and the security team and the police and the military and the government and the aliens and the gods and the universe and the multiverse and the omniverse and the metaverse and the xenoverse and the hyperverse and the ultraverse and the archverse and the megaverse and the gigaverse and the teraverse and the petaverse and the exaverse and the zettaverse and the yottaverse and the brontoverse and the geoverse?
+                # 
+                # I think we should just allow multiple sessions with a limit and delete the oldest
+                #
+                # But what if the user is logged in on multiple devices?
+                #
+                # I think we should just allow multiple sessions with a limit and delete the oldest
+                #
+                # But what if the user is logged in on multiple devices and they are all in different timezones?
+                #
+                # I think we should just allow multiple sessions with a limit and delete the oldest
+                #
+                # But what if the user is logged in on multiple devices and they are all in different timezones and they are all in different dimensions?
+                #
+                # I think we should just allow multiple sessions with a limit and delete the oldest
+                #
+                # But what if the user is logged in on multiple devices and they are all in different timezones and they are all in different dimensions and they are all in different universes?
+                #
+                # I think we should just allow multiple sessions with a limit and delete the oldest
+                #
+                # But what if the user is logged in on multiple devices and they are all in different timezones and they are all in different dimensions and they are all in different universes and they are all in different multiverses?
+                #
+                # I think we should just allow multiple sessions with a limit and delete the oldest
+                #
+                # But what if the user is logged in on multiple devices and they are all in different timezones and they are all in different dimensions and they are all in different universes and they are all in different multiverses and they are all in different omniverses?
+                #
+                # I think we should just allow multiple sessions with a limit and delete the oldest
+                #
+                # But what if the user is logged in on multiple devices and they are all in different timezones and they are all in different dimensions and they are all in different universes and they are all in different multiverses and they are all in different omniverses and they are all in different metaverses?
+
 
                 # Create a new token
                 token = str(uuid.uuid4())

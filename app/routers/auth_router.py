@@ -43,7 +43,7 @@ async def login(credentials: LoginSchema):
 
 @close_session
 @router.post("/auth", response_model=dict)
-async def authenicate(token: str):
+async def authenticate(token: str):
     try: 
         user_id, expires_at = AuthSessionManager.validate_token(token)
 
