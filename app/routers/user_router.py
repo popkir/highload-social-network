@@ -5,8 +5,11 @@ from starlette.responses import JSONResponse
 from app.utils.logger import logger
 from app.db.db import close_session
 
-from app.services.user_handler import UserManager
+from app.services.user_handler import UserManager, UserRegistrationDataIncompleteException, \
+    UserNotFoundException, UserIdInvalidException
 from app.schemas.user_schema import UserCreateSchema
+
+from asgi_correlation_id import correlation_id
 
 router = APIRouter()
 
@@ -19,19 +22,25 @@ async def register_user(user: UserCreateSchema):
         response = JSONResponse(
             status_code=200,
             content={
-                "success": "true",
                 "message": "User created successfully",
-                "id": str(model.id),
-                "details": str(model)
+                "user_id": str(model.id)
             }
         )
-
-    except Exception as e:
+    except UserRegistrationDataIncompleteException as e:
         logger.error(f"Error in router while creating user: {e}")
         response = JSONResponse(
             status_code=400, 
             content={
-                "success": "false", 
+                "message": "User registration data incomplete", 
+                "details": str(e)
+            }
+        )
+    except Exception as e:
+        logger.error(f"Error in router while creating user: {e}")
+        response = JSONResponse(
+            status_code=500, 
+            content={
+                "request_id": correlation_id.get(),
                 "message": "Error creating user", 
                 "details": str(e)
             }
@@ -48,20 +57,33 @@ async def get_user_by_id(id: str):
 
         response = JSONResponse(
             status_code=200,
-            content={
-                "success": "true",
-                "message": "User retrieved successfully",
-                "data": user_dict
-            }
+            content=user_dict
         )
-
-    except Exception as e:
+    except UserIdInvalidException as e:
         logger.error(f"Error in router getting user by id: {e}")
         response = JSONResponse(
             status_code=400,
             content={
-                "success": "false",
-                "message": "Error getting user by id",
+                "message": "User id invalid",
+                "details": str(e)
+            }
+        )
+    except UserNotFoundException as e:
+        logger.error(f"Error in router getting user by id: {e}")
+        response = JSONResponse(
+            status_code=404,
+            content={
+                "message": "User not found",
+                "details": str(e)
+            }
+        )
+    except Exception as e:
+        logger.error(f"Error in router getting user by id: {e}")
+        response = JSONResponse(
+            status_code=500,
+            content={
+                "request_id": correlation_id.get(),
+                "message": "Error getting user", 
                 "details": str(e)
             }
         )

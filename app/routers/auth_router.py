@@ -6,7 +6,11 @@ from app.utils.logger import logger
 from app.db.db import close_session
 
 from app.schemas.login_schema import LoginSchema
-from app.services.auth_handler import AuthSessionManager, AuthSessionNotFoundException, AuthSessionExpiredException, LoginFailedException
+from app.services.auth_handler import AuthSessionManager, AuthSessionNotFoundException,\
+    AuthSessionExpiredException, LoginFailedException
+from app.services.user_handler import UserNotFoundException, UserIdInvalidException
+
+from asgi_correlation_id import correlation_id
 
 router = APIRouter()
 
@@ -22,20 +26,36 @@ async def login(credentials: LoginSchema):
         response = JSONResponse(
             status_code=200,
             content={
-                "success": "true",
                 "message": "User logged in successfully",
                 "token": auth_session_token
             }
         )
-
-    except Exception as e:
+    except UserNotFoundException as e:
+        logger.error(f"Error in router while logging in: {e}")
+        response = JSONResponse(
+            status_code=404, 
+            content={ 
+                "message": "User not found",
+                "details": str(e)
+            }
+        )
+    except LoginFailedException as e:
         logger.error(f"Error in router while logging in: {e}")
         response = JSONResponse(
             status_code=400, 
-            content={
-                "success": "false", 
-                "message": "Error logging in", 
+            content={ 
+                "message": "Login failed",
                 "details": str(e)
+            }
+        )
+    except Exception as e:
+        logger.error(f"Error in router while logging in: {e}")
+        response = JSONResponse(
+            status_code=500, 
+            content={
+                "request_id": correlation_id.get(),
+                "message": "Error logging in: " + str(e), 
+                "code": 500
             }
         )
 
@@ -50,21 +70,54 @@ async def authenticate(token: str):
         response = JSONResponse(
             status_code=200,
             content={
-                "success": "true",
-                "message": f"User authenticated successfully with token {token}",
                 "user_id": str(user_id),
                 "expires_at": str(expires_at)
             }
         )
-
-    except Exception as e:
-        logger.error(f"Error in router getting user by id: {e}")
+    except UserIdInvalidException as e:
+        logger.error(f"Error in router authenticating user by token: {e}")
         response = JSONResponse(
             status_code=400,
             content={
-                "success": "false",
-                "message": f"Error authenticating user by token {token}",
+                "message": "User id invalid",
                 "details": str(e)
+            }
+        )
+    except UserNotFoundException as e:
+        logger.error(f"Error in router authenticating user by token: {e}")
+        response = JSONResponse(
+            status_code=404,
+            content={
+                "message": "User not found",
+                "details": str(e)
+            }
+        )
+    except AuthSessionNotFoundException as e:
+        logger.error(f"Error in router authenticating user by token: {e}")
+        response = JSONResponse(
+            status_code=401,
+            content={
+                "message": "Auth session not found",
+                "details": str(e)
+            }
+        )
+    except AuthSessionExpiredException as e:
+        logger.error(f"Error in router authenticating user by token: {e}")
+        response = JSONResponse(
+            status_code=401,
+            content={
+                "message": "Auth session expired",
+                "details": str(e)
+            }
+        )
+    except Exception as e:
+        logger.error(f"Error in router getting user by id: {e}")
+        response = JSONResponse(
+            status_code=500,
+            content={
+                "request_id": correlation_id.get(),
+                "message": "Error logging in: " + str(e), 
+                "code": 500
             }
         )
 

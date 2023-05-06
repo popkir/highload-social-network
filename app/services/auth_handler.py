@@ -8,16 +8,14 @@ from app.utils.logger import logger
 from app.models.models import UserModel, AuthSessionModel
 from app.schemas.user_schema import UserCreateSchema, UserPublicSchema
 from app.schemas.auth_session_schema import AuthSessionCreateSchema, AuthSessionPublicSchema
-from app.services.user_handler import UserManager
+from app.services.user_handler import UserManager, UserIdInvalidException, UserNotFoundException
 from app.utils.timestamps_getter import get_current_timestamp
 
 
 class LoginFailedException(Exception):
     pass
-
 class AuthSessionNotFoundException(Exception):
     pass
-
 class AuthSessionExpiredException(Exception):
     pass
 
@@ -58,7 +56,11 @@ class AuthSessionDBHandler():
     @staticmethod
     def get_entry_by_id(id: str) -> AuthSessionModel:
         try:
-            entry = Session.query(AuthSessionModel).filter(AuthSessionModel.id == id).first()
+            entry = Session.query(AuthSessionModel)\
+                .filter(
+                    AuthSessionModel.id == id, 
+                    AuthSessionModel.deleted == False
+                ).first()
         except Exception as e:
             Session.rollback()
             logger.error(f"Error querying entry by id in table {AuthSessionModel.__tablename__}: {e}")
@@ -69,7 +71,11 @@ class AuthSessionDBHandler():
     @staticmethod
     def get_entry_by_token(token: str) -> AuthSessionModel:
         try:
-            entry = Session.query(AuthSessionModel).filter(AuthSessionModel.token == token).first()
+            entry = Session.query(AuthSessionModel)\
+                .filter(
+                    AuthSessionModel.token == token,
+                    AuthSessionModel.deleted == False
+                ).first()
             
             if entry is None:
                 raise AuthSessionNotFoundException(f"Auth session with token {token} not found")
@@ -84,7 +90,7 @@ class AuthSessionDBHandler():
     @staticmethod
     def update_entry(id: str, entry: AuthSessionModel) -> bool:
         try:
-            print(entry)
+            logger.debug(entry)
             Session.query(AuthSessionModel).filter(AuthSessionModel.id == id).update(entry)
             Session.commit()
         except Exception as e:
@@ -121,6 +127,7 @@ class AuthSessionManager():
             if login_pwd_hash == pwd_hash:
                 logger.info(f"User {user_id} logged in")
 
+                """
                 # Delete any existing auth sessions for this user
                 # Or should we just update the expiry date?
                 # Or should we just allow multiple sessions?
@@ -179,7 +186,7 @@ class AuthSessionManager():
                 # I think we should just allow multiple sessions with a limit and delete the oldest
                 #
                 # But what if the user is logged in on multiple devices and they are all in different timezones and they are all in different dimensions and they are all in different universes and they are all in different multiverses and they are all in different omniverses and they are all in different metaverses?
-
+                """
 
                 # Create a new token
                 token = str(uuid.uuid4())
@@ -196,7 +203,7 @@ class AuthSessionManager():
                 AuthSessionDBHandler.insert_one(auth_session_model)
                 return token
             else:
-                raise LoginFailedException(f"Login failed for user {user_id}")
+                raise LoginFailedException(f"Login failed for user {user_id} due to incorrect password")
             
         except Exception as e:
             logger.error(f"Error during login: {e}")

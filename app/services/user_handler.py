@@ -1,6 +1,7 @@
 import bcrypt
 from datetime import datetime
 from typing import Tuple
+from uuid import UUID
 
 from app.db.db import Session
 from app.utils.logger import logger
@@ -9,6 +10,10 @@ from app.schemas.user_schema import UserCreateSchema, UserPublicSchema
 
 
 class UserNotFoundException(Exception):
+    pass
+class UserIdInvalidException(Exception):
+    pass
+class UserRegistrationDataIncompleteException(Exception):
     pass
 
 class UserDBHandler():
@@ -48,7 +53,18 @@ class UserDBHandler():
     @staticmethod
     def get_entry_by_id(id: str) -> UserModel:
         try:
-            entry = Session.query(UserModel).filter(UserModel.id == id).first()
+            # Check if id is uuid
+            try:
+                uuid_obj = UUID(id, version=4)
+            except ValueError:
+                raise UserIdInvalidException(f"User id {id} is not a valid uuid")
+
+            # Query entry
+            entry = Session.query(UserModel)\
+                .filter(
+                    UserModel.id == id,
+                    UserModel.deleted == False
+                ).first()
             if entry is None:
                 raise UserNotFoundException(f"User with id {id} not found")
             
@@ -62,10 +78,19 @@ class UserDBHandler():
     @staticmethod
     def get_auth_details_by_id(id: str) -> Tuple[str, str]:
         try:
+            # Check if id is uuid
+            try:
+                uuid_obj = UUID(id, version=4)
+            except ValueError:
+                raise UserIdInvalidException(f"User id {id} is not a valid uuid")
+            
+            # Query entry
             entry = Session\
                 .query(UserModel.password_salt, UserModel.password_hash)\
-                .filter(UserModel.id == id)\
-                .first()
+                .filter(
+                    UserModel.id == id, 
+                    UserModel.deleted == False
+                ).first()
             
             if entry is None:
                 raise UserNotFoundException(f"User with id {id} not found")
@@ -80,7 +105,7 @@ class UserDBHandler():
     @staticmethod
     def update_entry(id: str, entry: UserModel) -> bool:
         try:
-            print(entry)
+            logger.debug(entry)
             Session.query(UserModel).filter(UserModel.id == id).update(entry)
             Session.commit()
         except Exception as e:
@@ -109,7 +134,7 @@ class UserManager():
             # Convert salt to bytes
             if type(salt) == str:
                 salt = salt.encode('utf-8')
-            print(f"using salt: {salt}, type {type(salt)}")
+            logger.debug(f"using salt: {salt}, type {type(salt)}")
             
             # Convert password to bytes
             try:
@@ -117,7 +142,7 @@ class UserManager():
             except Exception as e:
                 logger.error(f"Error encoding password as utf-8: {e}")
                 raise e
-            print(f"hashing password: {password}, type {type(password)}")
+            logger.debug(f"hashing password: {password}, type {type(password)}")
             
             password_hash = bcrypt.hashpw(password, salt)
             password_hash_str = password_hash.decode('utf-8')
@@ -131,7 +156,7 @@ class UserManager():
     @staticmethod
     def generate_salt_and_hash(password: str) -> Tuple[str, str]:
         salt = bcrypt.gensalt()
-        print(f"creating new salt: {salt}, type {type(salt)}")
+        logger.debug(f"creating new salt: {salt}, type {type(salt)}")
         
         password_hash_str = __class__.get_pwd_hash(password, salt)
 
@@ -142,6 +167,12 @@ class UserManager():
     @staticmethod
     def register_user(user: UserCreateSchema) -> UserModel:
         try:
+            # Validate completeness
+            required_fields = ['first_name', 'last_name', 'birthday', 'biography', 'city']
+            missing_fields = [field for field in required_fields if getattr(user, field) is None]
+            if len(missing_fields) > 0:
+                raise UserRegistrationDataIncompleteException(f"Missing fields: {missing_fields}")
+
             # Generate salt and hash
             salt, password_hash = __class__.generate_salt_and_hash(user.password)
 
