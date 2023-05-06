@@ -11,10 +11,10 @@ class UserBaseSchema(BaseModel):
     city: str | None = None
 
 class UserCreateSchema(UserBaseSchema):
-    pasword: str 
+    password: str 
 
 class UserUpdateSchema(UserCreateSchema):
-    pasword: str | None = None
+    password: str | None = None
     deleted: Any | None = None
 
     @validator('deleted')
