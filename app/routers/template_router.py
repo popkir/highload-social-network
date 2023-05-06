@@ -29,7 +29,7 @@ async def create(template: TemplateCreateSchema):
         )
 
     except Exception as e:
-        logger.error(f"Error in router while creating house: {e}")
+        logger.error(f"Error in router while creating entry: {e}")
         response = JSONResponse(
             status_code=400, 
             content={

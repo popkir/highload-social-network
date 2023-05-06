@@ -1,15 +1,20 @@
 from typing import Any
-from datetime import datetime
+from datetime import datetime, date
 from pydantic import BaseModel, validator, ValidationError
 import uuid
 
-class TemplateCreateSchema(BaseModel):
-    name: str  | None = None
-    description: str | None = None
-    count: int  | None = None
-    price: float | None = None
+class UserBaseSchema(BaseModel):
+    first_name: str | None = None
+    last_name: str | None = None
+    birthday: date | None = None
+    biography: str | None = None
+    city: str | None = None
 
-class TemplateUpdateSchema(TemplateCreateSchema):
+class UserCreateSchema(UserBaseSchema):
+    pasword: str 
+
+class UserUpdateSchema(UserCreateSchema):
+    pasword: str | None = None
     deleted: Any | None = None
 
     @validator('deleted')
@@ -23,7 +28,8 @@ class TemplateUpdateSchema(TemplateCreateSchema):
         else:
             raise ValidationError('"deleted", if present, must be a boolean')
 
-class TemplateSchema(TemplateUpdateSchema):
+class UserSchema(UserBaseSchema):
     id: uuid.UUID | None = None
     created_at: datetime | None = None
     edited_at: datetime | None = None
+    deleted: bool | None = None
