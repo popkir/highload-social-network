@@ -1,0 +1,1597 @@
+{
+	"info": {
+		"_postman_id": "2382f67a-7089-447c-8c1a-7b909a5d72bf",
+		"name": "social-network",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "25386381"
+	},
+	"item": [
+		{
+			"name": "create user - successfully",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Check message\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.message).to.eql(\"User created successfully\");",
+							"});",
+							"",
+							"pm.collectionVariables.set(\"user_id\", pm.response.json().user_id);",
+							"console.log(\"got user id\", pm.collectionVariables.get(\"user_id\"))"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"first_name\": \"{{user_first_name}}\",\n    \"last_name\": \"{{user_last_name}}\",\n    \"birthday\": \"{{user_birthday}}\",\n    \"biography\": \"{{user_biography}}\",\n    \"city\": \"{{user_city}}\",\n    \"password\": \"{{user_password}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8085/user/register",
+					"host": [
+						"localhost"
+					],
+					"port": "8085",
+					"path": [
+						"user",
+						"register"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "create user successfully",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"birthday\": \"1970-03-15\",\n  \"biography\": \"I like watersports and travelling\",\n  \"city\": \"New York\",\n  \"password\": \"secret-password12345\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8085/user/register",
+							"host": [
+								"localhost"
+							],
+							"port": "8085",
+							"path": [
+								"user",
+								"register"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "date",
+							"value": "Sat, 06 May 2023 21:41:37 GMT"
+						},
+						{
+							"key": "server",
+							"value": "uvicorn"
+						},
+						{
+							"key": "content-length",
+							"value": "88"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "x-request-id",
+							"value": "ee30ee3e659349bf9fa8274975410f55"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"User created successfully\",\n    \"user_id\": \"7290ae26-8427-4b13-9585-be1ff721ec0f\"\n}"
+				}
+			]
+		},
+		{
+			"name": "create user - fail due to missing data field",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"pm.test(\"Check message\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.message).to.eql(\"User registration data incomplete\");",
+							"});",
+							"pm.test(\"Check details\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.details).to.eql(\"Missing fields: ['first_name']\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"last_name\": \"{{user_last_name}}\",\n    \"birthday\": \"{{user_birthday}}\",\n    \"biography\": \"{{user_biography}}\",\n    \"city\": \"{{user_city}}\",\n    \"password\": \"{{user_password}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8085/user/register",
+					"host": [
+						"localhost"
+					],
+					"port": "8085",
+					"path": [
+						"user",
+						"register"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "create user - fail due to missing field",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"last_name\": \"Doe\",\n  \"birthday\": \"1970-03-15\",\n  \"biography\": \"I like watersports and travelling\",\n  \"city\": \"New York\",\n  \"password\": \"secret-password12345\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8085/user/register",
+							"host": [
+								"localhost"
+							],
+							"port": "8085",
+							"path": [
+								"user",
+								"register"
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "date",
+							"value": "Sat, 06 May 2023 21:47:32 GMT"
+						},
+						{
+							"key": "server",
+							"value": "uvicorn"
+						},
+						{
+							"key": "content-length",
+							"value": "90"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "x-request-id",
+							"value": "19b32335cf49475e8f620241592bf47d"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"User registration data incomplete\",\n    \"details\": \"Missing fields: ['first_name']\"\n}"
+				}
+			]
+		},
+		{
+			"name": "create user - fail due to missing password field",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 422\", function () {",
+							"    pm.response.to.have.status(422);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"first_name\": \"{{user_first_name}}\",\n    \"last_name\": \"{{user_last_name}}\",\n    \"birthday\": \"{{user_birthday}}\",\n    \"biography\": \"{{user_biography}}\",\n    \"city\": \"{{user_city}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8085/user/register",
+					"host": [
+						"localhost"
+					],
+					"port": "8085",
+					"path": [
+						"user",
+						"register"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "create user - fail due to missing password field",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"first_name\": \"{{user_first_name}}\",\n    \"last_name\": \"{{user_last_name}}\",\n    \"birthday\": \"{{user_birthday}}\",\n    \"biography\": \"{{user_biography}}\",\n    \"city\": \"{{user_city}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8085/user/register",
+							"host": [
+								"localhost"
+							],
+							"port": "8085",
+							"path": [
+								"user",
+								"register"
+							]
+						}
+					},
+					"status": "Unprocessable Entity",
+					"code": 422,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "date",
+							"value": "Sun, 07 May 2023 07:46:33 GMT"
+						},
+						{
+							"key": "server",
+							"value": "uvicorn"
+						},
+						{
+							"key": "content-length",
+							"value": "92"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "x-request-id",
+							"value": "1db150c016124177bc02455ec8762eb0"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"detail\": [\n        {\n            \"loc\": [\n                \"body\",\n                \"password\"\n            ],\n            \"msg\": \"field required\",\n            \"type\": \"value_error.missing\"\n        }\n    ]\n}"
+				}
+			]
+		},
+		{
+			"name": "create user - fail due to wrong date format",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 422\", function () {",
+							"    pm.response.to.have.status(422);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"first_name\": \"{{user_first_name}}\",\n    \"last_name\": \"{{user_last_name}}\",\n    \"birthday\": \"{{user_birthday_wrong_format}}\",\n    \"biography\": \"{{user_biography}}\",\n    \"city\": \"{{user_city}}\",\n    \"password\": \"{{user_password}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8085/user/register",
+					"host": [
+						"localhost"
+					],
+					"port": "8085",
+					"path": [
+						"user",
+						"register"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "create user - fail due to wrong date",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"birthday\": \"not a date\",\n  \"biography\": \"I like watersports and travelling\",\n  \"city\": \"New York\",\n  \"password\": \"secret-password12345\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8085/user/register",
+							"host": [
+								"localhost"
+							],
+							"port": "8085",
+							"path": [
+								"user",
+								"register"
+							]
+						}
+					},
+					"status": "Unprocessable Entity",
+					"code": 422,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "date",
+							"value": "Sat, 06 May 2023 21:51:27 GMT"
+						},
+						{
+							"key": "server",
+							"value": "uvicorn"
+						},
+						{
+							"key": "content-length",
+							"value": "94"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "x-request-id",
+							"value": "23dde3c454354f5e9dd9d53f6a6870fc"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"detail\": [\n        {\n            \"loc\": [\n                \"body\",\n                \"birthday\"\n            ],\n            \"msg\": \"invalid date format\",\n            \"type\": \"value_error.date\"\n        }\n    ]\n}"
+				}
+			]
+		},
+		{
+			"name": "get user by id - successfully",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"User id matches\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var user_id = pm.collectionVariables.get(\"user_id\");",
+							"    pm.expect(jsonData.id).to.eql(user_id);",
+							"});",
+							"pm.test(\"First name is what we put there\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var user_first_name = pm.collectionVariables.get(\"user_first_name\");",
+							"    pm.expect(jsonData.first_name).to.eql(user_first_name);",
+							"});",
+							"pm.test(\"Last name is what we put there\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var user_last_name = pm.collectionVariables.get(\"user_last_name\");",
+							"    pm.expect(jsonData.last_name).to.eql(user_last_name);",
+							"});",
+							"pm.test(\"Birthday is what we put there\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var user_birthday = pm.collectionVariables.get(\"user_birthday\");",
+							"    pm.expect(jsonData.birthday).to.eql(user_birthday);",
+							"});",
+							"pm.test(\"Biography is what we put there\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var user_biography = pm.collectionVariables.get(\"user_biography\");",
+							"    pm.expect(jsonData.biography).to.eql(user_biography);",
+							"});",
+							"pm.test(\"City is what we put there\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var user_city = pm.collectionVariables.get(\"user_city\");",
+							"    pm.expect(jsonData.city).to.eql(user_city);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8085/user/get/{{user_id}}",
+					"host": [
+						"localhost"
+					],
+					"port": "8085",
+					"path": [
+						"user",
+						"get",
+						"{{user_id}}"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "get user by id - successfully",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8085/user/get/{{user_id}}",
+							"host": [
+								"localhost"
+							],
+							"port": "8085",
+							"path": [
+								"user",
+								"get",
+								"{{user_id}}"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "date",
+							"value": "Sun, 07 May 2023 06:51:16 GMT"
+						},
+						{
+							"key": "server",
+							"value": "uvicorn"
+						},
+						{
+							"key": "content-length",
+							"value": "366"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "x-request-id",
+							"value": "f2c7e9a2105d4255a8dcf92f445a3eec"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"first_name\": \"John\",\n    \"last_name\": \"Doe\",\n    \"birthday\": \"1985-03-28\",\n    \"biography\": \"I am a great fisherman and rock climber. I like to travel a lot. I can make a very very very very very very very very very very very very very very very very very very very very very very long description about myself.\",\n    \"city\": \"Atlanta\",\n    \"id\": \"a053395e-fcf0-481f-a02e-fb0038482b26\",\n    \"age\": 38\n}"
+				}
+			]
+		},
+		{
+			"name": "get user by id - fail due to missing id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 404\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8085/user/get/",
+					"host": [
+						"localhost"
+					],
+					"port": "8085",
+					"path": [
+						"user",
+						"get",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get user by id - fail due to wrong id format",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"pm.test(\"Check message\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.message).to.eql(\"User id invalid\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8085/user/get/{{user_id_wrong_format}}",
+					"host": [
+						"localhost"
+					],
+					"port": "8085",
+					"path": [
+						"user",
+						"get",
+						"{{user_id_wrong_format}}"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "get user by id - fail due to wrong id format",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8085/user/get/{{user_id_wrong_format}}",
+							"host": [
+								"localhost"
+							],
+							"port": "8085",
+							"path": [
+								"user",
+								"get",
+								"{{user_id_wrong_format}}"
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "date",
+							"value": "Sun, 07 May 2023 07:03:28 GMT"
+						},
+						{
+							"key": "server",
+							"value": "uvicorn"
+						},
+						{
+							"key": "content-length",
+							"value": "79"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "x-request-id",
+							"value": "91b03fca188448afb34bf6edd269b111"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"User id invalid\",\n    \"details\": \"User id blablabla is not a valid uuid\"\n}"
+				}
+			]
+		},
+		{
+			"name": "get user by id - fail due to user not found",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 404\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});",
+							"pm.test(\"Check message\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.message).to.eql(\"User not found\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8085/user/get/{{user_id_notfound}}",
+					"host": [
+						"localhost"
+					],
+					"port": "8085",
+					"path": [
+						"user",
+						"get",
+						"{{user_id_notfound}}"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "get user by id - fail due to wrong id format",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8085/user/get/{{user_id_notfound}}",
+							"host": [
+								"localhost"
+							],
+							"port": "8085",
+							"path": [
+								"user",
+								"get",
+								"{{user_id_notfound}}"
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "date",
+							"value": "Sun, 07 May 2023 07:03:28 GMT"
+						},
+						{
+							"key": "server",
+							"value": "uvicorn"
+						},
+						{
+							"key": "content-length",
+							"value": "79"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "x-request-id",
+							"value": "91b03fca188448afb34bf6edd269b111"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"User id invalid\",\n    \"details\": \"User id blablabla is not a valid uuid\"\n}"
+				}
+			]
+		},
+		{
+			"name": "login - successfully",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Check message\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.message).to.eql(\"User logged in successfully\");",
+							"});",
+							"",
+							"pm.collectionVariables.set(\"auth_token\", pm.response.json()[\"token\"])",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"user_id\": \"{{user_id}}\",\n    \"password\": \"{{user_password}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8085/login",
+					"host": [
+						"localhost"
+					],
+					"port": "8085",
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "login - successfully",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user_id\": \"{{user_id}}\",\n    \"password\": \"{{user_password}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8085/login",
+							"host": [
+								"localhost"
+							],
+							"port": "8085",
+							"path": [
+								"login"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "date",
+							"value": "Sun, 07 May 2023 07:08:18 GMT"
+						},
+						{
+							"key": "server",
+							"value": "uvicorn"
+						},
+						{
+							"key": "content-length",
+							"value": "88"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "x-request-id",
+							"value": "39df22b4038449cbbff21d60bb746b11"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"User logged in successfully\",\n    \"token\": \"05a2ce93-7150-4cac-ac12-cf95e668fce6\"\n}"
+				}
+			]
+		},
+		{
+			"name": "login - fail due to missing field",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 422\", function () {",
+							"    pm.response.to.have.status(422);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"user_id\": \"{{user_id}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8085/login",
+					"host": [
+						"localhost"
+					],
+					"port": "8085",
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "login - successfully",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user_id\": \"{{user_id}}\",\n    \"password\": \"{{user_password}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8085/login",
+							"host": [
+								"localhost"
+							],
+							"port": "8085",
+							"path": [
+								"login"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "date",
+							"value": "Sun, 07 May 2023 07:08:18 GMT"
+						},
+						{
+							"key": "server",
+							"value": "uvicorn"
+						},
+						{
+							"key": "content-length",
+							"value": "88"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "x-request-id",
+							"value": "39df22b4038449cbbff21d60bb746b11"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"User logged in successfully\",\n    \"token\": \"05a2ce93-7150-4cac-ac12-cf95e668fce6\"\n}"
+				}
+			]
+		},
+		{
+			"name": "login - fail due to wrong user id format",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"pm.test(\"Check message\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var expected_message = \"User id invalid\"",
+							"    pm.expect(jsonData.message).to.eql(expected_message);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"user_id\": \"{{user_id_wrong_format}}\",\n    \"password\": \"{{user_password}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8085/login",
+					"host": [
+						"localhost"
+					],
+					"port": "8085",
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "login - fail due to wrong user id format",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user_id\": \"{{user_id_wrong_format}}\",\n    \"password\": \"{{user_password}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8085/login",
+							"host": [
+								"localhost"
+							],
+							"port": "8085",
+							"path": [
+								"login"
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "date",
+							"value": "Sun, 07 May 2023 07:16:31 GMT"
+						},
+						{
+							"key": "server",
+							"value": "uvicorn"
+						},
+						{
+							"key": "content-length",
+							"value": "79"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "x-request-id",
+							"value": "264aab40908840de835797dc01d8290a"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"User id invalid\",\n    \"details\": \"User id blablabla is not a valid uuid\"\n}"
+				}
+			]
+		},
+		{
+			"name": "login - fail due to user not found",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 404\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});",
+							"pm.test(\"Check message\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.message).to.eql(\"User not found\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"user_id\": \"{{user_id_notfound}}\",\n    \"password\": \"{{user_password}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8085/login",
+					"host": [
+						"localhost"
+					],
+					"port": "8085",
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "login - fail due to user not found",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user_id\": \"{{user_id_notfound}}\",\n    \"password\": \"{{user_password}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8085/login",
+							"host": [
+								"localhost"
+							],
+							"port": "8085",
+							"path": [
+								"login"
+							]
+						}
+					},
+					"status": "Not Found",
+					"code": 404,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "date",
+							"value": "Sun, 07 May 2023 07:17:15 GMT"
+						},
+						{
+							"key": "server",
+							"value": "uvicorn"
+						},
+						{
+							"key": "content-length",
+							"value": "100"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "x-request-id",
+							"value": "cbfab800f9924180b40f8b6f8701bb9f"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"User not found\",\n    \"details\": \"User with id bbbbbbbb-fcf0-481f-a02e-fb0038482b26 not found\"\n}"
+				}
+			]
+		},
+		{
+			"name": "login - fail due to wrong password",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"pm.test(\"Check message\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.message).to.eql(\"Login failed\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"user_id\": \"{{user_id}}\",\n    \"password\": \"{{user_password_wrong}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8085/login",
+					"host": [
+						"localhost"
+					],
+					"port": "8085",
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "login - fail due to wrong password",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user_id\": \"{{user_id_notfound}}\",\n    \"password\": \"{{user_password_wrong}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8085/login",
+							"host": [
+								"localhost"
+							],
+							"port": "8085",
+							"path": [
+								"login"
+							]
+						}
+					},
+					"status": "Not Found",
+					"code": 404,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "date",
+							"value": "Sun, 07 May 2023 07:21:20 GMT"
+						},
+						{
+							"key": "server",
+							"value": "uvicorn"
+						},
+						{
+							"key": "content-length",
+							"value": "100"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "x-request-id",
+							"value": "bac76adf75aa432990059ce7636ff4a3"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"User not found\",\n    \"details\": \"User with id bbbbbbbb-fcf0-481f-a02e-fb0038482b26 not found\"\n}"
+				}
+			]
+		},
+		{
+			"name": "authenticate - successfully",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"User id is for same user\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.user_id).to.eql(pm.collectionVariables.get(\"user_id\"));",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"token\": \"{{auth_token}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8085/auth",
+					"host": [
+						"localhost"
+					],
+					"port": "8085",
+					"path": [
+						"auth"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "authenticate - successfully",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"token\": \"{{auth_token}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8085/auth",
+							"host": [
+								"localhost"
+							],
+							"port": "8085",
+							"path": [
+								"auth"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "date",
+							"value": "Sun, 07 May 2023 07:36:44 GMT"
+						},
+						{
+							"key": "server",
+							"value": "uvicorn"
+						},
+						{
+							"key": "content-length",
+							"value": "98"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "x-request-id",
+							"value": "c06313c1935b4c0aa88559aff0697cf1"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"user_id\": \"d0ab9c91-a97b-4f53-8524-fb1eaafea8c0\",\n    \"expires_at\": \"2023-05-07 08:36:34.076107+00:00\"\n}"
+				}
+			]
+		},
+		{
+			"name": "authenticate - fail due to wrong token format",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"pm.test(\"Check message\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.message).to.eql(\"Auth token invalid format\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"token\": \"{{auth_token_wrong_format}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8085/auth",
+					"host": [
+						"localhost"
+					],
+					"port": "8085",
+					"path": [
+						"auth"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "authenticate - fail due to wrong token format",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"token\": \"{{auth_token_wrong_format}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8085/auth",
+							"host": [
+								"localhost"
+							],
+							"port": "8085",
+							"path": [
+								"auth"
+							]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "date",
+							"value": "Sun, 07 May 2023 07:42:36 GMT"
+						},
+						{
+							"key": "server",
+							"value": "uvicorn"
+						},
+						{
+							"key": "content-length",
+							"value": "52"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "x-request-id",
+							"value": "27dc5fbb1a054d259eafc899c9ad6df5"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"Auth token invalid format\",\n    \"details\": \"\"\n}"
+				}
+			]
+		},
+		{
+			"name": "authenticate - fail due to session not found",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 401\", function () {",
+							"    pm.response.to.have.status(401);",
+							"});",
+							"pm.test(\"Check message\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.message).to.eql(\"Auth session not found\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"token\": \"{{auth_token_notfound}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8085/auth",
+					"host": [
+						"localhost"
+					],
+					"port": "8085",
+					"path": [
+						"auth"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "authenticate - fail due to bad token",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"token\": \"{{auth_token_notfound}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8085/auth",
+							"host": [
+								"localhost"
+							],
+							"port": "8085",
+							"path": [
+								"auth"
+							]
+						}
+					},
+					"status": "Unauthorized",
+					"code": 401,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "date",
+							"value": "Sun, 07 May 2023 07:45:19 GMT"
+						},
+						{
+							"key": "server",
+							"value": "uvicorn"
+						},
+						{
+							"key": "content-length",
+							"value": "119"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "x-request-id",
+							"value": "78a7bbcb29d94ede82864792f367abd6"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"Auth session not found\",\n    \"details\": \"Auth session with token bbbbbbbb-bbbb-bbbb-bbbb-fb0038482b26 not found\"\n}"
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "user_first_name",
+			"value": "John"
+		},
+		{
+			"key": "user_last_name",
+			"value": "Doe"
+		},
+		{
+			"key": "user_biography",
+			"value": "I am a great fisherman and rock climber. I like to travel a lot. I can make a very very very very very very very very very very very very very very very very very very very very very very long description about myself."
+		},
+		{
+			"key": "user_birthday",
+			"value": "1985-03-28"
+		},
+		{
+			"key": "user_city",
+			"value": "Atlanta"
+		},
+		{
+			"key": "user_password",
+			"value": "very-secret-password-12345"
+		},
+		{
+			"key": "user_id",
+			"value": ""
+		},
+		{
+			"key": "user_birthday_wrong_format",
+			"value": "blablabla"
+		},
+		{
+			"key": "user_id_wrong_format",
+			"value": "blablabla",
+			"type": "string"
+		},
+		{
+			"key": "user_id_notfound",
+			"value": "bbbbbbbb-bbbb-bbbb-bbbb-fb0038482b26",
+			"type": "string"
+		},
+		{
+			"key": "auth_token",
+			"value": ""
+		},
+		{
+			"key": "user_password_wrong",
+			"value": "wrong-password",
+			"type": "string"
+		},
+		{
+			"key": "auth_token_wrong_format",
+			"value": "blablabla",
+			"type": "string"
+		},
+		{
+			"key": "auth_token_notfound",
+			"value": "bbbbbbbb-bbbb-bbbb-bbbb-fb0038482b26",
+			"type": "string"
+		}
+	]
+}

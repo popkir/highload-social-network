@@ -103,10 +103,10 @@ class UserDBHandler():
             raise e
             
     @staticmethod
-    def update_entry(id: str, entry: UserModel) -> bool:
+    def update_entry(id: str, update_data: dict) -> bool:
         try:
-            logger.debug(entry)
-            Session.query(UserModel).filter(UserModel.id == id).update(entry)
+            logger.info(f'Updating record {id} in table {UserModel.__tablename__} with {update_data}')
+            Session.query(UserModel).filter(UserModel.id == id).update(update_data)
             Session.commit()
         except Exception as e:
             Session.rollback()

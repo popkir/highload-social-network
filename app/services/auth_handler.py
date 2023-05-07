@@ -5,14 +5,15 @@ import uuid
 
 from app.db.db import Session
 from app.utils.logger import logger
-from app.models.models import UserModel, AuthSessionModel
-from app.schemas.user_schema import UserCreateSchema, UserPublicSchema
-from app.schemas.auth_session_schema import AuthSessionCreateSchema, AuthSessionPublicSchema
-from app.services.user_handler import UserManager, UserIdInvalidException, UserNotFoundException
+from app.models.models import AuthSessionModel
+from app.schemas.auth_session_schema import AuthSessionCreateSchema
+from app.services.user_handler import UserManager
 from app.utils.timestamps_getter import get_current_timestamp
 
 
 class LoginFailedException(Exception):
+    pass
+class AuthTokenInvalidFormatException(Exception):
     pass
 class AuthSessionNotFoundException(Exception):
     pass
@@ -88,10 +89,12 @@ class AuthSessionDBHandler():
         return entry
     
     @staticmethod
-    def update_entry(id: str, entry: AuthSessionModel) -> bool:
+
+    @staticmethod
+    def update_entry(id: str, update_data: dict) -> bool:
         try:
-            logger.debug(entry)
-            Session.query(AuthSessionModel).filter(AuthSessionModel.id == id).update(entry)
+            logger.info(f'Updating record {id} in table {AuthSessionModel.__tablename__} with {update_data}')
+            Session.query(AuthSessionModel).filter(AuthSessionModel.id == id).update(update_data)
             Session.commit()
         except Exception as e:
             Session.rollback()
@@ -213,6 +216,11 @@ class AuthSessionManager():
     def validate_token(token: str) -> str:
         # Returns the user_id and expiry date if the token is valid
         try:
+            try:
+                uuid_token = uuid.UUID(token)
+            except ValueError:
+                raise AuthTokenInvalidFormatException
+
             auth_session = AuthSessionDBHandler.get_entry_by_token(token)
 
             expires_at = auth_session.expires_at

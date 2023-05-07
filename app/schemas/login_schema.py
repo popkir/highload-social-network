@@ -6,3 +6,6 @@ import uuid
 class LoginSchema(BaseModel):
     user_id: str
     password: str
+
+class AuthSchema(BaseModel):
+    token: str

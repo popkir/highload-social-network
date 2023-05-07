@@ -5,9 +5,9 @@ from starlette.responses import JSONResponse
 from app.utils.logger import logger
 from app.db.db import close_session
 
-from app.schemas.login_schema import LoginSchema
+from app.schemas.login_schema import LoginSchema, AuthSchema
 from app.services.auth_handler import AuthSessionManager, AuthSessionNotFoundException,\
-    AuthSessionExpiredException, LoginFailedException
+    AuthSessionExpiredException, LoginFailedException, AuthTokenInvalidFormatException
 from app.services.user_handler import UserNotFoundException, UserIdInvalidException
 
 from asgi_correlation_id import correlation_id
@@ -28,6 +28,15 @@ async def login(credentials: LoginSchema):
             content={
                 "message": "User logged in successfully",
                 "token": auth_session_token
+            }
+        )
+    except UserIdInvalidException as e:
+        logger.error(f"Error in router getting user by id: {e}")
+        response = JSONResponse(
+            status_code=400,
+            content={
+                "message": "User id invalid",
+                "details": str(e)
             }
         )
     except UserNotFoundException as e:
@@ -63,8 +72,10 @@ async def login(credentials: LoginSchema):
 
 @close_session
 @router.post("/auth", response_model=dict)
-async def authenticate(token: str):
+async def authenticate(secrets: AuthSchema):
     try: 
+        token = secrets.token
+
         user_id, expires_at = AuthSessionManager.validate_token(token)
 
         response = JSONResponse(
@@ -74,21 +85,12 @@ async def authenticate(token: str):
                 "expires_at": str(expires_at)
             }
         )
-    except UserIdInvalidException as e:
+    except AuthTokenInvalidFormatException as e:
         logger.error(f"Error in router authenticating user by token: {e}")
         response = JSONResponse(
             status_code=400,
             content={
-                "message": "User id invalid",
-                "details": str(e)
-            }
-        )
-    except UserNotFoundException as e:
-        logger.error(f"Error in router authenticating user by token: {e}")
-        response = JSONResponse(
-            status_code=404,
-            content={
-                "message": "User not found",
+                "message": "Auth token invalid format",
                 "details": str(e)
             }
         )

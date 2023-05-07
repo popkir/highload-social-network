@@ -49,10 +49,10 @@ class TemplateDBHandler():
         return entry
     
     @staticmethod
-    def update_entry(id: str, entry: TemplateModel) -> bool:
+    def update_entry(id: str, update_data: dict) -> bool:
         try:
-            print(entry)
-            Session.query(TemplateModel).filter(TemplateModel.id == id).update(entry)
+            logger.info(f'Updating record {id} in table {TemplateModel.__tablename__} with {update_data}')
+            Session.query(TemplateModel).filter(TemplateModel.id == id).update(update_data)
             Session.commit()
         except Exception as e:
             Session.rollback()
