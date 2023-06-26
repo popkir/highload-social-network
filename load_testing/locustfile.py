@@ -37,10 +37,10 @@ class StagesShape(LoadTestShape):
     """
 
     stages = [
-        {"duration": 120, "users": 1, "spawn_rate": 1},
-        {"duration": 240, "users": 10, "spawn_rate": 10},
-        {"duration": 360, "users": 100, "spawn_rate": 100},
-        {"duration": 480, "users": 1000, "spawn_rate": 1000}
+        {"duration": 240, "users": 1, "spawn_rate": 1},
+        {"duration": 480, "users": 10, "spawn_rate": 10},
+        {"duration": 720, "users": 100, "spawn_rate": 100},
+        {"duration": 960, "users": 1000, "spawn_rate": 1000}
     ]
 
     stop_at_end = True
