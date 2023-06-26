@@ -15,6 +15,11 @@ class UserIdInvalidException(Exception):
     pass
 class UserRegistrationDataIncompleteException(Exception):
     pass
+class UserSearchNeedsAtLeastOneNameField(Exception):
+    pass
+class UserSearchEmptyResult(Exception):
+    pass
+
 
 class UserDBHandler():
     @staticmethod
@@ -127,6 +132,70 @@ class UserDBHandler():
 
         return True
 
+    @staticmethod
+    def search_by_first_name(first_name: str) -> Tuple[UserModel]:
+        try:
+            entries = Session\
+                .query(UserModel)\
+                .filter(
+                    UserModel.first_name.like(first_name + '%'),
+                    UserModel.deleted == False
+                )\
+                .order_by(UserModel.id)\
+                .all()
+            if entries is None or entries == []:
+                raise UserSearchEmptyResult(f"Users with first name starting with {first_name} not found")
+            
+        except Exception as e:
+            Session.rollback()
+            logger.error(f"Error querying entry by first_name in table {UserModel.__tablename__}: {e}")
+            raise e
+
+        return entries
+
+    @staticmethod
+    def search_by_last_name(last_name: str) -> Tuple[UserModel]:
+        try:
+            entries = Session\
+                .query(UserModel)\
+                .filter(
+                    UserModel.last_name.like(last_name + '%'),
+                    UserModel.deleted == False
+                )\
+                .order_by(UserModel.id)\
+                .all()
+            if entries is None or entries == []:
+                raise UserSearchEmptyResult(f"Users with last name starting with {last_name} not found")
+            
+        except Exception as e:
+            Session.rollback()
+            logger.error(f"Error querying entry by last_name in table {UserModel.__tablename__}: {e}")
+            raise e
+
+        return entries
+
+    @staticmethod
+    def search_by_first_and_last_name(first_name: str, last_name: str) -> Tuple[UserModel]:
+        try:
+            entries = Session\
+                .query(UserModel)\
+                .filter(
+                    UserModel.first_name.like(first_name + '%'),
+                    UserModel.last_name.like(last_name + '%'),
+                    UserModel.deleted == False
+                )\
+                .order_by(UserModel.id)\
+                .all()
+            if entries is None or entries == []:
+                raise UserSearchEmptyResult(f"Users with first name starting with {first_name} and last name starting with {last_name} not found")
+            
+        except Exception as e:
+            Session.rollback()
+            logger.error(f"Error querying entry by first_name and last_name in table {UserModel.__tablename__}: {e}")
+            raise e
+
+        return entries
+
 class UserManager():
     @staticmethod
     def get_pwd_hash(password: str, salt: str | bytes) -> str:
@@ -198,13 +267,18 @@ class UserManager():
             raise e
 
     @staticmethod
+    def compute_age(user_model: UserModel) -> int:
+        age = (datetime.now().date() - user_model.birthday).days // 365
+        return age
+    
+    @staticmethod
     def get_user_by_id(id: str) -> UserPublicSchema:
         try:
             # Get user model from db
             user_model = UserDBHandler.get_entry_by_id(id)
             
             # Compute age
-            age = (datetime.now().date() - user_model.birthday).days // 365
+            age = __class__.compute_age(user_model)
 
             # Create user public schema
             user = UserPublicSchema(
@@ -228,4 +302,38 @@ class UserManager():
             return UserDBHandler.get_auth_details_by_id(id)
         except Exception as e:
             logger.error(f"Error getting auth details by id: {e}")
+            raise e
+        
+    @staticmethod
+    def search_user_by_name(first_name: str | None, last_name: str | None) -> Tuple[UserPublicSchema]:
+        try:
+            if first_name is None:
+                if last_name is None:
+                    raise UserSearchNeedsAtLeastOneNameField(f"User search with no first name and no last name is not well defined, aborting")
+                else:
+                    user_models = UserDBHandler.search_by_last_name(last_name)
+            else:
+                if last_name is None:
+                    user_models = UserDBHandler.search_by_first_name(first_name)
+                else:
+                    user_models = UserDBHandler.search_by_first_and_last_name(first_name, last_name)
+            
+            user_schemas = []
+            for user_model in user_models:
+                age = __class__.compute_age(user_model)
+                user = UserPublicSchema(
+                    id=user_model.id,
+                    first_name=user_model.first_name,
+                    last_name=user_model.last_name,
+                    age=age,
+                    birthday=user_model.birthday,
+                    biography=user_model.biography,
+                    city=user_model.city
+                )
+                user_schemas.append(user)
+            
+            return tuple(user_schemas)
+
+        except Exception as e:
+            logger.error(f"Error searching user by name: {e}")
             raise e

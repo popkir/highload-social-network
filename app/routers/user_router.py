@@ -6,7 +6,7 @@ from app.utils.logger import logger
 from app.db.db import close_session
 
 from app.services.user_handler import UserManager, UserRegistrationDataIncompleteException, \
-    UserNotFoundException, UserIdInvalidException
+    UserNotFoundException, UserIdInvalidException, UserSearchEmptyResult, UserSearchNeedsAtLeastOneNameField
 from app.schemas.user_schema import UserCreateSchema
 
 from asgi_correlation_id import correlation_id
@@ -89,6 +89,51 @@ async def get_user_by_id(id: str):
         )
 
     return response
+
+@close_session
+@router.get("/search", response_model=dict)
+async def search_user(first_name: str = None, last_name: str = None):    
+    try: 
+        users = UserManager.search_user_by_name(first_name, last_name)
+        users = jsonable_encoder([u.dict() for u in users])
+
+        response = JSONResponse(
+            status_code=200,
+            content=users
+        )
+    except UserSearchNeedsAtLeastOneNameField as e:
+        logger.error(f"Error in router searching user: {e}")
+        response = JSONResponse(
+            status_code=400,
+            content={
+                "message": "User search needs at least first name or last name",
+                "details": str(e)
+            }
+        )
+    except UserSearchEmptyResult as e:
+        logger.error(f"Error in router searching user: {e}")
+        response = JSONResponse(
+            status_code=404,
+            content={
+                "message": "Users not found",
+                "details": str(e)
+            }
+        )
+    except Exception as e:
+        logger.error(f"Error in router searching user: {e}")
+        response = JSONResponse(
+            status_code=500,
+            content={
+                "request_id": correlation_id.get(),
+                "message": "Error getting user", 
+                "details": str(e)
+            }
+        )
+
+    return response
+
+
+
 
 # @close_session
 # @router.put("/update/{id}", response_model=dict)
