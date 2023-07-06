@@ -1,5 +1,5 @@
 from sqlalchemy import Column, String, Float, Integer, DateTime, \
-    Date, Boolean,  UUID, Text
+    Date, Boolean,  UUID, Text, Index
 from sqlalchemy.sql import func
 import uuid
 
@@ -49,6 +49,12 @@ class UserModel(Base):
     birthday = Column(Date, nullable=False)
     biography = Column(Text, nullable=False)
     city = Column(String(255), nullable=False)
+
+    # Indexes
+    __table_args__ = (
+        Index("idx_user_first_name_last_name_deleted", "first_name", "last_name", "deleted"),
+    )
+
 
     def __str__(self):
         return f"User(id={self.id}, first_name={self.first_name}, last_name={self.last_name}, birthday={self.birthday}, biography={self.biography}, city={self.city},  created_at={self.created_at}, edited_at={self.edited_at}, deleted={self.deleted})"

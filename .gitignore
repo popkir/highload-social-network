@@ -185,3 +185,7 @@ pyrightconfig.json
 .env.local
 .vscode/
 **/__pycache__
+**/.DS_Store
+
+data
+data/*
