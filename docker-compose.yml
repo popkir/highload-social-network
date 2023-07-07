@@ -1,18 +1,30 @@
 version: "3.9"
 
+volumes:
+    postgres_data: {}
+    prometheus_data: {}
+    grafana_data: {}
+    
+networks:
+  default:
+    name: social-network-default
+
 services:
   db:
     image: postgres:11
-    # container_name: social-network-postgres
+    container_name: social-network-postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     environment:
       - POSTGRES_USER=social_network_admin
       - POSTGRES_PASSWORD=social_network_password
       - POSTGRES_DB=social_network_db
+    restart: always
 
   backend:
-    # container_name: social-network-backend
+    container_name: social-network-backend
     build:
       context: .
       dockerfile: ./Dockerfile
@@ -26,8 +38,45 @@ services:
       - .env.local
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust
+    restart: always
 
-networks:
-  default:
-    name: social-network-default
-    external: true
+  postgres_exporter:
+    image: wrouesnel/postgres_exporter
+    container_name: social-network-postgres-exporter
+    ports:
+      - "9187:9187"
+    depends_on:
+      - db
+    environment:
+      DATA_SOURCE_NAME: "postgresql://social_network_admin:social_network_password@db:5432/social_network_db?sslmode=disable"
+    restart: always
+
+  prometheus:
+    image: prom/prometheus
+    container_name: social-network-prometheus
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    ports:
+      - "9090:9090"
+    depends_on:
+      - postgres_exporter
+    restart: always
+
+
+  grafana:
+    image: grafana/grafana
+    container_name: social-network-grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    volumes:
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
+    restart: always
