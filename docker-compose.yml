@@ -41,8 +41,10 @@ services:
     restart: always
 
   postgres_exporter:
-    image: wrouesnel/postgres_exporter
+    image: quay.io/prometheuscommunity/postgres-exporter
     container_name: social-network-postgres-exporter
+    # command:
+    #   - '--collector.stat_statements'
     ports:
       - "9187:9187"
     depends_on:
@@ -55,7 +57,7 @@ services:
     image: prom/prometheus
     container_name: social-network-prometheus
     volumes:
-      - ./prometheus/:/etc/prometheus/
+      - ./prometheus:/etc/prometheus
       - prometheus_data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
@@ -79,4 +81,10 @@ services:
     volumes:
       - ./grafana/datasources:/etc/grafana/provisioning/datasources
       - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana/grafana.ini:/etc/grafana/grafana.ini
+      - grafana_data:/var/lib/grafana
+    # environment:
+    #   - GF_AUTH_ANONYMOUS_ENABLED=true
+    #   - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    #   - GF_AUTH_DISABLE_LOGIN_FORM=true
     restart: always
