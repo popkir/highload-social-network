@@ -6,12 +6,6 @@ import locust.stats
 locust.stats.CSV_STATS_INTERVAL_SEC = 1
 locust.stats.CONSOLE_STATS_INTERVAL_SEC = 10
 
-class UserBehaviour(TaskSet):
-    def __init__(self, parent):
-        super().__init__(parent)
-        print(self.locust.host)
-
-
 user_profiles_df = pd.read_parquet("../../app/db/migrations/alembic/mock_data/user_profiles.parquet")
 user_names_df = user_profiles_df[["first_name", "last_name"]].drop_duplicates()
 
