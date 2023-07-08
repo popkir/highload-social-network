@@ -187,6 +187,4 @@ pyrightconfig.json
 **/__pycache__
 **/.DS_Store
 
-data
-data/*
 replication/volumes/*
