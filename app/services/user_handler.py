@@ -8,6 +8,8 @@ from app.utils.logger import logger
 from app.models.models import UserModel
 from app.schemas.user_schema import UserCreateSchema, UserPublicSchema
 
+from  sqlalchemy.sql.expression import func, select
+
 
 class UserNotFoundException(Exception):
     pass
@@ -54,6 +56,36 @@ class UserDBHandler():
             raise e
 
         return entries
+
+    @staticmethod
+    def get_active_entry_ids(limit: int = 10, random: bool = True) -> Tuple[str]:
+        try:
+            if random:
+                id_rows = Session\
+                    .query(UserModel.id)\
+                    .filter(UserModel.deleted == False)\
+                    .order_by(func.random())\
+                    .limit(limit)\
+                    .all()
+            else:
+                id_rows = Session\
+                    .query(UserModel.id)\
+                    .filter(UserModel.deleted == False)\
+                    .order_by(UserModel.id)\
+                    .limit(limit)\
+                    .all()
+            if id_rows is None:
+                raise ValueError("got None from db instead of user ids")
+            if len(id_rows) == 0:
+                raise ValueError("got empty list from db instead of user ids")
+            
+            ids = tuple(str(x[0]) for x in id_rows)
+            print(ids)
+        except Exception as e:
+            Session.rollback()
+            logger.error(f"Error querying active entries in table {UserModel.__tablename__}: {e}")
+            raise e
+        return ids
 
     @staticmethod
     def get_entry_by_id(id: str) -> UserModel:
@@ -336,4 +368,14 @@ class UserManager():
 
         except Exception as e:
             logger.error(f"Error searching user by name: {e}")
+            raise e
+        
+    @staticmethod
+    def get_user_ids(limit: int = 10, random: bool = True) -> Tuple[str]:
+        try:
+            ids = UserDBHandler.get_active_entry_ids(limit, random)
+            return ids
+    
+        except Exception as e:
+            logger.error(f"Error getting user ids: {e}")
             raise e
