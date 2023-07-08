@@ -6,12 +6,13 @@ import locust.stats
 locust.stats.CSV_STATS_INTERVAL_SEC = 1
 locust.stats.CONSOLE_STATS_INTERVAL_SEC = 10
 
-user_profiles_df = pd.read_parquet("../../app/db/migrations/alembic/mock_data/user_profiles.parquet")
+user_profiles_df = pd.read_parquet("../../../app/db/migrations/alembic/mock_data/user_profiles.parquet")
 user_names_df = user_profiles_df[["first_name", "last_name"]].drop_duplicates()
 
-user_ids_str = requests.get("http://localhost:8085/user/get-ids?number=10000&random=true").content
+user_ids_str = requests.get("http://localhost:8085/user/get-ids?number=100000&random=true").content
 user_ids_list = json.loads(user_ids_str)
 user_ids_df = pd.DataFrame(user_ids_list)
+print(user_ids_df)
 
 class UserSearchGetUser(HttpUser):
     @task
@@ -23,7 +24,7 @@ class UserSearchGetUser(HttpUser):
 
     @task
     def user_get(self):
-        id = user_ids_df.sample().iloc[0]
+        id = user_ids_df.sample().iloc[0][0]
         self.client.get("/user/get/{}".format(id))
 
 class StagesShape(LoadTestShape):
@@ -40,10 +41,10 @@ class StagesShape(LoadTestShape):
     """
 
     stages = [
-        {"duration": 120, "users": 1, "spawn_rate": 3},
-        {"duration": 240, "users": 10, "spawn_rate": 30},
-        {"duration": 360, "users": 100, "spawn_rate": 300},
-        {"duration": 480, "users": 1000, "spawn_rate": 3000}
+        {"duration": 180, "users": 1, "spawn_rate": 1},
+        {"duration": 360, "users": 10, "spawn_rate": 10},
+        {"duration": 540, "users": 100, "spawn_rate": 100},
+        {"duration": 720, "users": 1000, "spawn_rate": 1000}
     ]
 
     stop_at_end = True
