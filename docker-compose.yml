@@ -40,51 +40,51 @@ services:
       POSTGRES_HOST_AUTH_METHOD: trust
     restart: always
 
-  postgres_exporter:
-    image: quay.io/prometheuscommunity/postgres-exporter
-    container_name: social-network-postgres-exporter
-    # command:
-    #   - '--collector.stat_statements'
-    ports:
-      - "9187:9187"
-    depends_on:
-      - db
-    environment:
-      DATA_SOURCE_NAME: "postgresql://social_network_admin:social_network_password@db:5432/social_network_db?sslmode=disable"
-    restart: always
+  # postgres_exporter:
+  #   image: quay.io/prometheuscommunity/postgres-exporter
+  #   container_name: social-network-postgres-exporter
+  #   # command:
+  #   #   - '--collector.stat_statements'
+  #   ports:
+  #     - "9187:9187"
+  #   depends_on:
+  #     - db
+  #   environment:
+  #     DATA_SOURCE_NAME: "postgresql://social_network_admin:social_network_password@db:5432/social_network_db?sslmode=disable"
+  #   restart: always
 
-  prometheus:
-    image: prom/prometheus
-    container_name: social-network-prometheus
-    volumes:
-      - ./prometheus:/etc/prometheus
-      - prometheus_data:/prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
-      - '--web.console.templates=/usr/share/prometheus/consoles'
-    ports:
-      - "9090:9090"
-    depends_on:
-      - postgres_exporter
-    restart: always
+  # prometheus:
+  #   image: prom/prometheus
+  #   container_name: social-network-prometheus
+  #   volumes:
+  #     - ./prometheus:/etc/prometheus
+  #     - prometheus_data:/prometheus
+  #   command:
+  #     - '--config.file=/etc/prometheus/prometheus.yml'
+  #     - '--storage.tsdb.path=/prometheus'
+  #     - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+  #     - '--web.console.templates=/usr/share/prometheus/consoles'
+  #   ports:
+  #     - "9090:9090"
+  #   depends_on:
+  #     - postgres_exporter
+  #   restart: always
 
 
-  grafana:
-    image: grafana/grafana
-    container_name: social-network-grafana
-    ports:
-      - "3000:3000"
-    depends_on:
-      - prometheus
-    volumes:
-      - ./grafana/datasources:/etc/grafana/provisioning/datasources
-      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
-      - ./grafana/grafana.ini:/etc/grafana/grafana.ini
-      - grafana_data:/var/lib/grafana
-    # environment:
-    #   - GF_AUTH_ANONYMOUS_ENABLED=true
-    #   - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
-    #   - GF_AUTH_DISABLE_LOGIN_FORM=true
-    restart: always
+  # grafana:
+  #   image: grafana/grafana
+  #   container_name: social-network-grafana
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     - prometheus
+  #   volumes:
+  #     - ./grafana/datasources:/etc/grafana/provisioning/datasources
+  #     - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
+  #     - ./grafana/grafana.ini:/etc/grafana/grafana.ini
+  #     - grafana_data:/var/lib/grafana
+  #   # environment:
+  #   #   - GF_AUTH_ANONYMOUS_ENABLED=true
+  #   #   - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+  #   #   - GF_AUTH_DISABLE_LOGIN_FORM=true
+  #   restart: always
