@@ -80,7 +80,7 @@ class UserDBHandler():
                 raise ValueError("got empty list from db instead of user ids")
             
             ids = tuple(str(x[0]) for x in id_rows)
-            print(ids)
+            # print(ids)
         except Exception as e:
             Session.rollback()
             logger.error(f"Error querying active entries in table {UserModel.__tablename__}: {e}")
