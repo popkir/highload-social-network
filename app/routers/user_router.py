@@ -133,6 +133,29 @@ async def search_user(first_name: str = None, last_name: str = None):
     return response
 
 
+@close_session
+@router.get("/get-ids", response_model=dict)
+async def get_user_ids(number: int = 10, random: bool = True):
+    try: 
+        user_ids = UserManager.get_user_ids(limit=number, random=random)
+        
+        response = JSONResponse(
+            status_code=200,
+            content=user_ids
+        )
+    
+    except Exception as e:
+        logger.error(f"Error in router retrieving user ids: {e}")
+        response = JSONResponse(
+            status_code=500,
+            content={
+                "request_id": correlation_id.get(),
+                "message": "Error getting user ids", 
+                "details": str(e)
+            }
+        )
+
+    return response
 
 
 # @close_session

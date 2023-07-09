@@ -1,0 +1,31 @@
+--
+-- PostgreSQL database cluster dump
+--
+
+SET default_transaction_read_only = off;
+
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+
+--
+-- Roles
+--
+
+CREATE ROLE postgres;
+ALTER ROLE postgres WITH SUPERUSER INHERIT CREATEROLE CREATEDB LOGIN REPLICATION BYPASSRLS PASSWORD 'SCRAM-SHA-256$4096:/j7pWUzOjytbpt2OvOZ76A==$DM78xSBqxOSNjS7au8AdMiO0NkL7lwDvYVk9fMKqvHg=:sNj/k7M+HoC1WWyJoD+khBmWn7JBOMuPDOby4TGvbAg=';
+CREATE ROLE replicator;
+ALTER ROLE replicator WITH NOSUPERUSER INHERIT NOCREATEROLE NOCREATEDB LOGIN REPLICATION NOBYPASSRLS PASSWORD 'SCRAM-SHA-256$4096:VwbPN2G0iPZVBICtCjwj8A==$lGy7fAYmXXdBJmOvOGQBpfO5IJpGuF2QkbsS3yWZZAo=:WwIjZFORr4XVtJvsnio4Ds1nQ7qNSsXt/SzVBaVwl0I=';
+
+--
+-- User Configurations
+--
+
+
+
+
+
+
+--
+-- PostgreSQL database cluster dump complete
+--
+
