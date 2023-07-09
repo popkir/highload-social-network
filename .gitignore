@@ -188,3 +188,5 @@ pyrightconfig.json
 **/.DS_Store
 
 replication/volumes/*
+postgres_data/*
+
