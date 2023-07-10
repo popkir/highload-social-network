@@ -6,13 +6,17 @@ import locust.stats
 locust.stats.CSV_STATS_INTERVAL_SEC = 1
 locust.stats.CONSOLE_STATS_INTERVAL_SEC = 10
 
-user_profiles_df = pd.read_parquet("../../app/db/migrations/alembic/mock_data/user_profiles.parquet")
+print("Loading data...")
+print('Loading user profiles... from file on disk')
+user_profiles_df = pd.read_parquet("../../../app/db/migrations/alembic/mock_data/user_profiles.parquet")
 user_names_df = user_profiles_df[["first_name", "last_name"]].drop_duplicates()
-
+print('Loading user ids... via API request')
 user_ids_str = requests.get("http://localhost:8085/user/get-ids?number=100000&random=true").content
 user_ids_list = json.loads(user_ids_str)
 user_ids_df = pd.DataFrame(user_ids_list)
-print(user_ids_df)
+print('Done loading data. Starting load test...')
+
+
 
 class UserSearchGetUser(HttpUser):
     @task

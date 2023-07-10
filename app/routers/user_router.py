@@ -3,7 +3,7 @@ from fastapi.encoders import jsonable_encoder
 from starlette.responses import JSONResponse
 
 from app.utils.logger import logger
-from app.db.db import close_session
+from app.db.db import close_session, with_slave
 
 from app.services.user_handler import UserManager, UserRegistrationDataIncompleteException, \
     UserNotFoundException, UserIdInvalidException, UserSearchEmptyResult, UserSearchNeedsAtLeastOneNameField
@@ -13,11 +13,12 @@ from asgi_correlation_id import correlation_id
 
 router = APIRouter()
 
-@close_session
+
 @router.post("/register", response_model=dict)
+@close_session
 async def register_user(user: UserCreateSchema):
     try: 
-        model = UserManager.register_user(user)
+        model = await UserManager.register_user(user)
 
         response = JSONResponse(
             status_code=200,
@@ -48,11 +49,12 @@ async def register_user(user: UserCreateSchema):
 
     return response
 
-@close_session
 @router.get("/get/{id}", response_model=dict)
+@with_slave()
+@close_session
 async def get_user_by_id(id: str):
     try: 
-        user_schema = UserManager.get_user_by_id(id)
+        user_schema = await UserManager.get_user_by_id(id)
         user_dict = jsonable_encoder(user_schema.dict())
 
         response = JSONResponse(
@@ -90,11 +92,13 @@ async def get_user_by_id(id: str):
 
     return response
 
-@close_session
+
 @router.get("/search", response_model=dict)
+@with_slave()
+@close_session
 async def search_user(first_name: str = None, last_name: str = None):    
     try: 
-        users = UserManager.search_user_by_name(first_name, last_name)
+        users = await UserManager.search_user_by_name(first_name, last_name)
         users = jsonable_encoder([u.dict() for u in users])
 
         response = JSONResponse(
@@ -132,12 +136,12 @@ async def search_user(first_name: str = None, last_name: str = None):
 
     return response
 
-
-@close_session
 @router.get("/get-ids", response_model=dict)
+@with_slave()
+@close_session
 async def get_user_ids(number: int = 10, random: bool = True):
     try: 
-        user_ids = UserManager.get_user_ids(limit=number, random=random)
+        user_ids = await UserManager.get_user_ids(limit=number, random=random)
         
         response = JSONResponse(
             status_code=200,
