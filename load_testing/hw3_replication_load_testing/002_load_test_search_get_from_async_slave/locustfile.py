@@ -17,7 +17,7 @@ user_ids_df = pd.DataFrame(user_ids_list)
 print('Done loading data. Starting load test...')
 
 
-
+counter = 0
 class UserSearchGetUser(HttpUser):
     @task
     def user_search(self):
@@ -30,6 +30,29 @@ class UserSearchGetUser(HttpUser):
     def user_get(self):
         id = user_ids_df.sample().iloc[0][0]
         self.client.get("/user/get/{}".format(id))
+
+    # @task
+    # def user_register(self):
+    #     global counter
+    #     counter += 1
+
+    #     first_name = f'First name {counter}'
+    #     last_name = f'Last name {counter}'
+    #     bio = f'Bio {counter}'
+    #     city = f'City {counter}'
+    #     password = f'Password {counter}'
+    #     birthday = f'2020-01-01'
+
+    #     payload = {
+    #         "first_name": first_name,
+    #         "last_name": last_name,
+    #         "biography": bio,
+    #         "city": city,
+    #         "password": password,
+    #         "birthday": birthday
+    #     }
+    #     self.client.post("/user/register", json=payload)
+
 
 class StagesShape(LoadTestShape):
     """
@@ -45,11 +68,12 @@ class StagesShape(LoadTestShape):
     """
 
     stages = [
-        {"duration": 120, "users": 1, "spawn_rate": 1},
-        {"duration": 240, "users": 10, "spawn_rate": 10},
-        {"duration": 360, "users": 100, "spawn_rate": 100},
-        {"duration": 480, "users": 1000, "spawn_rate": 1000}
+        {"duration": 180, "users": 1, "spawn_rate": 1},
+        {"duration": 360, "users": 10, "spawn_rate": 10},
+        {"duration": 540, "users": 100, "spawn_rate": 100},
+        {"duration": 720, "users": 1000, "spawn_rate": 1000}
     ]
+
 
     stop_at_end = True
 
