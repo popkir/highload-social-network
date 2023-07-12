@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Tuple
 from uuid import UUID
 
-from app.db.db import Session
+from app.db.db import SessionManager, with_slave
 from app.utils.logger import logger
 from app.models.models import UserModel
 from app.schemas.user_schema import UserCreateSchema, UserPublicSchema
@@ -25,12 +25,12 @@ class UserSearchEmptyResult(Exception):
 
 class UserDBHandler():
     @staticmethod
-    def insert_one(entry: UserModel) -> bool:
+    async def insert_one(entry: UserModel) -> bool:
         try:
-            Session.add(entry)
-            Session.commit()
+            SessionManager.current.add(entry)
+            SessionManager.current.commit()
         except Exception as e:
-            Session.rollback()
+            SessionManager.current.rollback()
             logger.error(f"Error inserting an entry into table {UserModel.__tablename__}: {e}")
             raise e
         return True
@@ -38,9 +38,9 @@ class UserDBHandler():
     @staticmethod
     def get_all_entries() -> Tuple[UserModel]:
         try:
-            entries = Session.query(UserModel).all()
+            entries = SessionManager.current.query(UserModel).all()
         except Exception as e:
-            Session.rollback()
+            SessionManager.current.rollback()
             logger.error(f"Error querying entries in table {UserModel.__tablename__}: {e}")
             raise e
 
@@ -49,26 +49,26 @@ class UserDBHandler():
     @staticmethod
     def get_active_entries() -> Tuple[UserModel]:
         try:
-            entries = Session.query(UserModel).filter(UserModel.deleted == False).all()
+            entries = SessionManager.current.query(UserModel).filter(UserModel.deleted == False).all()
         except Exception as e:
-            Session.rollback()
+            SessionManager.current.rollback()
             logger.error(f"Error querying active entries in table {UserModel.__tablename__}: {e}")
             raise e
 
         return entries
 
     @staticmethod
-    def get_active_entry_ids(limit: int = 10, random: bool = True) -> Tuple[str]:
+    async def get_active_entry_ids(limit: int = 10, random: bool = True) -> Tuple[str]:
         try:
             if random:
-                id_rows = Session\
+                id_rows = SessionManager.current\
                     .query(UserModel.id)\
                     .filter(UserModel.deleted == False)\
                     .order_by(func.random())\
                     .limit(limit)\
                     .all()
             else:
-                id_rows = Session\
+                id_rows = SessionManager.current\
                     .query(UserModel.id)\
                     .filter(UserModel.deleted == False)\
                     .order_by(UserModel.id)\
@@ -80,15 +80,14 @@ class UserDBHandler():
                 raise ValueError("got empty list from db instead of user ids")
             
             ids = tuple(str(x[0]) for x in id_rows)
-            print(ids)
         except Exception as e:
-            Session.rollback()
+            SessionManager.current.rollback()
             logger.error(f"Error querying active entries in table {UserModel.__tablename__}: {e}")
             raise e
         return ids
 
     @staticmethod
-    def get_entry_by_id(id: str) -> UserModel:
+    async def get_entry_by_id(id: str) -> UserModel:
         try:
             # Check if id is uuid
             try:
@@ -97,7 +96,7 @@ class UserDBHandler():
                 raise UserIdInvalidException(f"User id {id} is not a valid uuid")
 
             # Query entry
-            entry = Session.query(UserModel)\
+            entry = SessionManager.current.query(UserModel)\
                 .filter(
                     UserModel.id == id,
                     UserModel.deleted == False
@@ -106,7 +105,7 @@ class UserDBHandler():
                 raise UserNotFoundException(f"User with id {id} not found")
             
         except Exception as e:
-            Session.rollback()
+            SessionManager.current.rollback()
             logger.error(f"Error querying entry by id in table {UserModel.__tablename__}: {e}")
             raise e
 
@@ -122,7 +121,7 @@ class UserDBHandler():
                 raise UserIdInvalidException(f"User id {id} is not a valid uuid")
             
             # Query entry
-            entry = Session\
+            entry = SessionManager.current\
                 .query(UserModel.password_salt, UserModel.password_hash)\
                 .filter(
                     UserModel.id == id, 
@@ -135,7 +134,7 @@ class UserDBHandler():
             return entry
 
         except Exception as e:
-            Session.rollback()
+            SessionManager.current.rollback()
             logger.error(f"Error querying entry by id in table {UserModel.__tablename__}: {e}")
             raise e
             
@@ -143,10 +142,10 @@ class UserDBHandler():
     def update_entry(id: str, update_data: dict) -> bool:
         try:
             logger.info(f'Updating record {id} in table {UserModel.__tablename__} with {update_data}')
-            Session.query(UserModel).filter(UserModel.id == id).update(update_data)
-            Session.commit()
+            SessionManager.current.query(UserModel).filter(UserModel.id == id).update(update_data)
+            SessionManager.current.commit()
         except Exception as e:
-            Session.rollback()
+            SessionManager.current.rollback()
             logger.error(f"Error updating entry by id in table {UserModel.__tablename__}: {e}")
             raise e
 
@@ -155,19 +154,19 @@ class UserDBHandler():
     @staticmethod
     def delete_entry(id: str) -> bool:
         try:
-            Session.query(UserModel).filter(UserModel.id == id).update({UserModel.deleted: True})
-            Session.commit()
+            SessionManager.current.query(UserModel).filter(UserModel.id == id).update({UserModel.deleted: True})
+            SessionManager.current.commit()
         except Exception as e:
-            Session.rollback()
+            SessionManager.current.rollback()
             logger.error(f"Error deleting entry by id in table {UserModel.__tablename__}: {e}")
             raise e
 
         return True
 
     @staticmethod
-    def search_by_first_name(first_name: str) -> Tuple[UserModel]:
+    async def search_by_first_name(first_name: str) -> Tuple[UserModel]:
         try:
-            entries = Session\
+            entries = SessionManager.current\
                 .query(UserModel)\
                 .filter(
                     UserModel.first_name.like(first_name + '%'),
@@ -179,16 +178,16 @@ class UserDBHandler():
                 raise UserSearchEmptyResult(f"Users with first name starting with {first_name} not found")
             
         except Exception as e:
-            Session.rollback()
+            SessionManager.current.rollback()
             logger.error(f"Error querying entry by first_name in table {UserModel.__tablename__}: {e}")
             raise e
 
         return entries
 
     @staticmethod
-    def search_by_last_name(last_name: str) -> Tuple[UserModel]:
+    async def search_by_last_name(last_name: str) -> Tuple[UserModel]:
         try:
-            entries = Session\
+            entries = SessionManager.current\
                 .query(UserModel)\
                 .filter(
                     UserModel.last_name.like(last_name + '%'),
@@ -200,16 +199,16 @@ class UserDBHandler():
                 raise UserSearchEmptyResult(f"Users with last name starting with {last_name} not found")
             
         except Exception as e:
-            Session.rollback()
+            SessionManager.current.rollback()
             logger.error(f"Error querying entry by last_name in table {UserModel.__tablename__}: {e}")
             raise e
 
         return entries
 
     @staticmethod
-    def search_by_first_and_last_name(first_name: str, last_name: str) -> Tuple[UserModel]:
+    async def search_by_first_and_last_name(first_name: str, last_name: str) -> Tuple[UserModel]:
         try:
-            entries = Session\
+            entries = SessionManager.current\
                 .query(UserModel)\
                 .filter(
                     UserModel.first_name.like(first_name + '%'),
@@ -222,7 +221,7 @@ class UserDBHandler():
                 raise UserSearchEmptyResult(f"Users with first name starting with {first_name} and last name starting with {last_name} not found")
             
         except Exception as e:
-            Session.rollback()
+            SessionManager.current.rollback()
             logger.error(f"Error querying entry by first_name and last_name in table {UserModel.__tablename__}: {e}")
             raise e
 
@@ -266,7 +265,7 @@ class UserManager():
         return salt_str, password_hash_str
 
     @staticmethod
-    def register_user(user: UserCreateSchema) -> UserModel:
+    async def register_user(user: UserCreateSchema) -> UserModel:
         try:
             # Validate completeness
             required_fields = ['first_name', 'last_name', 'birthday', 'biography', 'city']
@@ -289,7 +288,7 @@ class UserManager():
             )
 
             # Insert user model into database
-            UserDBHandler.insert_one(user_model)
+            await UserDBHandler.insert_one(user_model)
 
             # Return user id
             return user_model
@@ -304,10 +303,10 @@ class UserManager():
         return age
     
     @staticmethod
-    def get_user_by_id(id: str) -> UserPublicSchema:
+    async def get_user_by_id(id: str) -> UserPublicSchema:
         try:
             # Get user model from db
-            user_model = UserDBHandler.get_entry_by_id(id)
+            user_model = await UserDBHandler.get_entry_by_id(id)
             
             # Compute age
             age = __class__.compute_age(user_model)
@@ -337,18 +336,18 @@ class UserManager():
             raise e
         
     @staticmethod
-    def search_user_by_name(first_name: str | None, last_name: str | None) -> Tuple[UserPublicSchema]:
+    async def search_user_by_name(first_name: str | None, last_name: str | None) -> Tuple[UserPublicSchema]:
         try:
             if first_name is None:
                 if last_name is None:
                     raise UserSearchNeedsAtLeastOneNameField(f"User search with no first name and no last name is not well defined, aborting")
                 else:
-                    user_models = UserDBHandler.search_by_last_name(last_name)
+                    user_models = await UserDBHandler.search_by_last_name(last_name)
             else:
                 if last_name is None:
-                    user_models = UserDBHandler.search_by_first_name(first_name)
+                    user_models = await UserDBHandler.search_by_first_name(first_name)
                 else:
-                    user_models = UserDBHandler.search_by_first_and_last_name(first_name, last_name)
+                    user_models = await UserDBHandler.search_by_first_and_last_name(first_name, last_name)
             
             user_schemas = []
             for user_model in user_models:
@@ -371,9 +370,9 @@ class UserManager():
             raise e
         
     @staticmethod
-    def get_user_ids(limit: int = 10, random: bool = True) -> Tuple[str]:
+    async def get_user_ids(limit: int = 10, random: bool = True) -> Tuple[str]:
         try:
-            ids = UserDBHandler.get_active_entry_ids(limit, random)
+            ids = await UserDBHandler.get_active_entry_ids(limit, random)
             return ids
     
         except Exception as e:

@@ -1,27 +1,76 @@
 version: "3.9"
 
-volumes:
-    postgres_data: {}
-    prometheus_data: {}
-    grafana_data: {}
-    
-networks:
-  default:
-    name: social-network-default
+# volumes:
+    # postgres_data_0: {}
+    # postgres_data_1: {}
+    # postgres_data_2: {}
+    # prometheus_data: {}
+    # grafana_data: {}
 
+networks:
+  social-network-default:
+    external: true
+      
+    
 services:
-  db:
-    image: postgres:11
-    container_name: social-network-postgres
+  db_0:
+    image: postgres:15
+    container_name: social-network-db_0
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./postgres_data/db_0:/var/lib/postgresql/data
+      - ./postgres_config/postgresql.db0.conf:/var/lib/postgresql/data/postgresql.conf
+      - ./postgres_config/pg_hba.conf:/var/lib/postgresql/data/pg_hba.conf
+    networks:
+      - social-network-default
     ports:
       - "5432:5432"
     environment:
       - POSTGRES_USER=social_network_admin
       - POSTGRES_PASSWORD=social_network_password
       - POSTGRES_DB=social_network_db
-    restart: always
+      - POSTGRES_HOST_AUTH_METHOD=scram-sha-256
+      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
+    restart: unless-stopped
+  
+  db_1:
+    image: postgres:15
+    container_name: social-network-db_1
+    volumes:
+      - ./postgres_data/db_1:/var/lib/postgresql/data
+      - ./postgres_config/postgresql.db1.conf:/var/lib/postgresql/data/postgresql.conf
+      - ./postgres_config/pg_hba.conf:/var/lib/postgresql/data/pg_hba.conf
+      - ./postgres_config/standby.signal:/var/lib/postgresql/data/standby.signal
+    networks:
+      - social-network-default
+    ports:
+      - "15432:5432"
+    environment:
+      - POSTGRES_USER=social_network_admin
+      - POSTGRES_PASSWORD=social_network_password
+      - POSTGRES_DB=social_network_db
+      - POSTGRES_HOST_AUTH_METHOD=scram-sha-256
+      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
+    restart: unless-stopped
+
+  db_2:
+    image: postgres:15
+    container_name: social-network-db_2
+    volumes:
+      - ./postgres_data/db_2:/var/lib/postgresql/data
+      - ./postgres_config/postgresql.db2.conf:/var/lib/postgresql/data/postgresql.conf
+      - ./postgres_config/pg_hba.conf:/var/lib/postgresql/data/pg_hba.conf
+      - ./postgres_config/standby.signal:/var/lib/postgresql/data/standby.signal
+    networks:
+      - social-network-default
+    ports:
+      - "25432:5432"
+    environment:
+      - POSTGRES_USER=social_network_admin
+      - POSTGRES_PASSWORD=social_network_password
+      - POSTGRES_DB=social_network_db
+      - POSTGRES_HOST_AUTH_METHOD=scram-sha-256
+      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
+    restart: unless-stopped
 
   backend:
     container_name: social-network-backend
@@ -30,15 +79,19 @@ services:
       dockerfile: ./Dockerfile
     volumes:
       - .:/code
+    networks:
+      - social-network-default
     ports:
       - "8085:8085"
     depends_on:
-      - db
+      - db_0
+      - db_1
+      - db_2
     env_file:
       - .env.local
     environment:
-      POSTGRES_HOST_AUTH_METHOD: trust
-    restart: always
+      POSTGRES_HOST_AUTH_METHOD: scram-sha-256
+    restart: unless-stopped
 
   # postgres_exporter:
   #   image: quay.io/prometheuscommunity/postgres-exporter
@@ -47,8 +100,10 @@ services:
   #   #   - '--collector.stat_statements'
   #   ports:
   #     - "9187:9187"
+  #   networks:
+  #     - social-network-default
   #   depends_on:
-  #     - db
+  #     - db_0
   #   environment:
   #     DATA_SOURCE_NAME: "postgresql://social_network_admin:social_network_password@db:5432/social_network_db?sslmode=disable"
   #   restart: always
@@ -59,6 +114,8 @@ services:
   #   volumes:
   #     - ./prometheus:/etc/prometheus
   #     - prometheus_data:/prometheus
+  #   networks:
+  #     - social-network-default
   #   command:
   #     - '--config.file=/etc/prometheus/prometheus.yml'
   #     - '--storage.tsdb.path=/prometheus'
@@ -68,7 +125,7 @@ services:
   #     - "9090:9090"
   #   depends_on:
   #     - postgres_exporter
-  #   restart: always
+  #   restart: unless-stopped
 
 
   # grafana:
@@ -76,6 +133,8 @@ services:
   #   container_name: social-network-grafana
   #   ports:
   #     - "3000:3000"
+  #   networks:
+  #     - social-network-default
   #   depends_on:
   #     - prometheus
   #   volumes:
@@ -87,4 +146,4 @@ services:
   #   #   - GF_AUTH_ANONYMOUS_ENABLED=true
   #   #   - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
   #   #   - GF_AUTH_DISABLE_LOGIN_FORM=true
-  #   restart: always
+  #   restart: unless-stopped

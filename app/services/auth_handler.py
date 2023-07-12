@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from typing import Tuple
 import uuid
 
-from app.db.db import Session
+from app.db.db import SessionManager
 from app.utils.logger import logger
 from app.models.models import AuthSessionModel
 from app.schemas.auth_session_schema import AuthSessionCreateSchema
@@ -24,10 +24,10 @@ class AuthSessionDBHandler():
     @staticmethod
     def insert_one(entry: AuthSessionModel) -> bool:
         try:
-            Session.add(entry)
-            Session.commit()
+            SessionManager.current.add(entry)
+            SessionManager.current.commit()
         except Exception as e:
-            Session.rollback()
+            SessionManager.current.rollback()
             logger.error(f"Error inserting an entry into table {AuthSessionModel.__tablename__}: {e}")
             raise e
         return True
@@ -35,9 +35,9 @@ class AuthSessionDBHandler():
     @staticmethod
     def get_all_entries() -> Tuple[AuthSessionModel]:
         try:
-            entries = Session.query(AuthSessionModel).all()
+            entries = SessionManager.current.query(AuthSessionModel).all()
         except Exception as e:
-            Session.rollback()
+            SessionManager.current.rollback()
             logger.error(f"Error querying entries in table {AuthSessionModel.__tablename__}: {e}")
             raise e
 
@@ -46,9 +46,9 @@ class AuthSessionDBHandler():
     @staticmethod
     def get_active_entries() -> Tuple[AuthSessionModel]:
         try:
-            entries = Session.query(AuthSessionModel).filter(AuthSessionModel.deleted == False).all()
+            entries = SessionManager.current.query(AuthSessionModel).filter(AuthSessionModel.deleted == False).all()
         except Exception as e:
-            Session.rollback()
+            SessionManager.current.rollback()
             logger.error(f"Error querying active entries in table {AuthSessionModel.__tablename__}: {e}")
             raise e
 
@@ -57,13 +57,13 @@ class AuthSessionDBHandler():
     @staticmethod
     def get_entry_by_id(id: str) -> AuthSessionModel:
         try:
-            entry = Session.query(AuthSessionModel)\
+            entry = SessionManager.current.query(AuthSessionModel)\
                 .filter(
                     AuthSessionModel.id == id, 
                     AuthSessionModel.deleted == False
                 ).first()
         except Exception as e:
-            Session.rollback()
+            SessionManager.current.rollback()
             logger.error(f"Error querying entry by id in table {AuthSessionModel.__tablename__}: {e}")
             raise e
 
@@ -72,7 +72,7 @@ class AuthSessionDBHandler():
     @staticmethod
     def get_entry_by_token(token: str) -> AuthSessionModel:
         try:
-            entry = Session.query(AuthSessionModel)\
+            entry = SessionManager.current.query(AuthSessionModel)\
                 .filter(
                     AuthSessionModel.token == token,
                     AuthSessionModel.deleted == False
@@ -82,7 +82,7 @@ class AuthSessionDBHandler():
                 raise AuthSessionNotFoundException(f"Auth session with token {token} not found")
 
         except Exception as e:
-            Session.rollback()
+            SessionManager.current.rollback()
             logger.error(f"Error querying entry by token in table {AuthSessionModel.__tablename__}: {e}")
             raise e
 
@@ -94,10 +94,10 @@ class AuthSessionDBHandler():
     def update_entry(id: str, update_data: dict) -> bool:
         try:
             logger.info(f'Updating record {id} in table {AuthSessionModel.__tablename__} with {update_data}')
-            Session.query(AuthSessionModel).filter(AuthSessionModel.id == id).update(update_data)
-            Session.commit()
+            SessionManager.current.query(AuthSessionModel).filter(AuthSessionModel.id == id).update(update_data)
+            SessionManager.current.commit()
         except Exception as e:
-            Session.rollback()
+            SessionManager.current.rollback()
             logger.error(f"Error updating entry by id in table {AuthSessionModel.__tablename__}: {e}")
             raise e
 
@@ -106,10 +106,10 @@ class AuthSessionDBHandler():
     @staticmethod
     def delete_entry(id: str) -> bool:
         try:
-            Session.query(AuthSessionModel).filter(AuthSessionModel.id == id).update({AuthSessionModel.deleted: True})
-            Session.commit()
+            SessionManager.current.query(AuthSessionModel).filter(AuthSessionModel.id == id).update({AuthSessionModel.deleted: True})
+            SessionManager.current.commit()
         except Exception as e:
-            Session.rollback()
+            SessionManager.current.rollback()
             logger.error(f"Error deleting entry by id in table {AuthSessionModel.__tablename__}: {e}")
             raise e
 

@@ -6,14 +6,18 @@ import locust.stats
 locust.stats.CSV_STATS_INTERVAL_SEC = 1
 locust.stats.CONSOLE_STATS_INTERVAL_SEC = 10
 
-user_profiles_df = pd.read_parquet("../../app/db/migrations/alembic/mock_data/user_profiles.parquet")
+print("Loading data...")
+print('Loading user profiles... from file on disk')
+user_profiles_df = pd.read_parquet("../../../app/db/migrations/alembic/mock_data/user_profiles.parquet")
 user_names_df = user_profiles_df[["first_name", "last_name"]].drop_duplicates()
-
+print('Loading user ids... via API request')
 user_ids_str = requests.get("http://localhost:8085/user/get-ids?number=100000&random=true").content
 user_ids_list = json.loads(user_ids_str)
 user_ids_df = pd.DataFrame(user_ids_list)
-print(user_ids_df)
+print('Done loading data. Starting load test...')
 
+
+counter = 0
 class UserSearchGetUser(HttpUser):
     @task
     def user_search(self):
@@ -26,6 +30,29 @@ class UserSearchGetUser(HttpUser):
     def user_get(self):
         id = user_ids_df.sample().iloc[0][0]
         self.client.get("/user/get/{}".format(id))
+
+    # @task
+    # def user_register(self):
+    #     global counter
+    #     counter += 1
+
+    #     first_name = f'First name {counter}'
+    #     last_name = f'Last name {counter}'
+    #     bio = f'Bio {counter}'
+    #     city = f'City {counter}'
+    #     password = f'Password {counter}'
+    #     birthday = f'2020-01-01'
+
+    #     payload = {
+    #         "first_name": first_name,
+    #         "last_name": last_name,
+    #         "biography": bio,
+    #         "city": city,
+    #         "password": password,
+    #         "birthday": birthday
+    #     }
+    #     self.client.post("/user/register", json=payload)
+
 
 class StagesShape(LoadTestShape):
     """
@@ -41,11 +68,12 @@ class StagesShape(LoadTestShape):
     """
 
     stages = [
-        {"duration": 120, "users": 1, "spawn_rate": 1},
-        {"duration": 240, "users": 10, "spawn_rate": 10},
-        {"duration": 360, "users": 100, "spawn_rate": 100},
-        {"duration": 480, "users": 1000, "spawn_rate": 1000}
+        {"duration": 180, "users": 1, "spawn_rate": 1},
+        {"duration": 360, "users": 10, "spawn_rate": 10},
+        {"duration": 540, "users": 100, "spawn_rate": 100},
+        {"duration": 720, "users": 1000, "spawn_rate": 1000}
     ]
+
 
     stop_at_end = True
 

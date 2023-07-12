@@ -1,5 +1,5 @@
 from typing import Tuple
-from app.db.db import Session
+from app.db.db import SessionManager
 from app.utils.logger import logger
 from app.models.models import TemplateModel
 
@@ -7,10 +7,10 @@ class TemplateDBHandler():
     @staticmethod
     def insert_one(entry: TemplateModel) -> bool:
         try:
-            Session.add(entry)
-            Session.commit()
+            SessionManager.current.add(entry)
+            SessionManager.current.commit()
         except Exception as e:
-            Session.rollback()
+            SessionManager.current.rollback()
             logger.error(f"Error inserting an entry into table {TemplateModel.__tablename__}: {e}")
             raise e
         return True
@@ -18,9 +18,9 @@ class TemplateDBHandler():
     @staticmethod
     def get_all_entries() -> Tuple[TemplateModel]:
         try:
-            entries = Session.query(TemplateModel).all()
+            entries = SessionManager.current.query(TemplateModel).all()
         except Exception as e:
-            Session.rollback()
+            SessionManager.current.rollback()
             logger.error(f"Error querying entries in table {TemplateModel.__tablename__}: {e}")
             raise e
 
@@ -29,9 +29,9 @@ class TemplateDBHandler():
     @staticmethod
     def get_active_entries() -> Tuple[TemplateModel]:
         try:
-            entries = Session.query(TemplateModel).filter(TemplateModel.deleted == False).all()
+            entries = SessionManager.current.query(TemplateModel).filter(TemplateModel.deleted == False).all()
         except Exception as e:
-            Session.rollback()
+            SessionManager.current.rollback()
             logger.error(f"Error querying active entries in table {TemplateModel.__tablename__}: {e}")
             raise e
 
@@ -40,9 +40,9 @@ class TemplateDBHandler():
     @staticmethod
     def get_entry_by_id(id: str) -> TemplateModel:
         try:
-            entry = Session.query(TemplateModel).filter(TemplateModel.id == id).first()
+            entry = SessionManager.current.query(TemplateModel).filter(TemplateModel.id == id).first()
         except Exception as e:
-            Session.rollback()
+            SessionManager.current.rollback()
             logger.error(f"Error querying entry by id in table {TemplateModel.__tablename__}: {e}")
             raise e
 
@@ -52,10 +52,10 @@ class TemplateDBHandler():
     def update_entry(id: str, update_data: dict) -> bool:
         try:
             logger.info(f'Updating record {id} in table {TemplateModel.__tablename__} with {update_data}')
-            Session.query(TemplateModel).filter(TemplateModel.id == id).update(update_data)
-            Session.commit()
+            SessionManager.current.query(TemplateModel).filter(TemplateModel.id == id).update(update_data)
+            SessionManager.current.commit()
         except Exception as e:
-            Session.rollback()
+            SessionManager.current.rollback()
             logger.error(f"Error updating entry by id in table {TemplateModel.__tablename__}: {e}")
             raise e
 
@@ -64,10 +64,10 @@ class TemplateDBHandler():
     @staticmethod
     def delete_entry(id: str) -> bool:
         try:
-            Session.query(TemplateModel).filter(TemplateModel.id == id).update({TemplateModel.deleted: True})
-            Session.commit()
+            SessionManager.current.query(TemplateModel).filter(TemplateModel.id == id).update({TemplateModel.deleted: True})
+            SessionManager.current.commit()
         except Exception as e:
-            Session.rollback()
+            SessionManager.current.rollback()
             logger.error(f"Error deleting entry by id in table {TemplateModel.__tablename__}: {e}")
             raise e
 
