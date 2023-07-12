@@ -5,7 +5,7 @@ from app.models.models import TemplateModel
 
 class TemplateDBHandler():
     @staticmethod
-    def insert_one(entry: TemplateModel) -> bool:
+    async def insert_one(entry: TemplateModel) -> bool:
         try:
             SessionManager.current.add(entry)
             SessionManager.current.commit()
