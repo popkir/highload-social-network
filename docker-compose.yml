@@ -20,6 +20,7 @@ services:
       - ./postgres_data/db_0:/var/lib/postgresql/data
       - ./postgres_config/postgresql.db0.conf:/var/lib/postgresql/data/postgresql.conf
       - ./postgres_config/pg_hba.conf:/var/lib/postgresql/data/pg_hba.conf
+      - ./postgres_config/standby.signal:/var/lib/postgresql/data/standby.signal
     networks:
       - social-network-default
     ports:
@@ -39,7 +40,7 @@ services:
       - ./postgres_data/db_1:/var/lib/postgresql/data
       - ./postgres_config/postgresql.db1.conf:/var/lib/postgresql/data/postgresql.conf
       - ./postgres_config/pg_hba.conf:/var/lib/postgresql/data/pg_hba.conf
-      - ./postgres_config/standby.signal:/var/lib/postgresql/data/standby.signal
+      # - ./postgres_config/standby.signal:/var/lib/postgresql/data/standby.signal
     networks:
       - social-network-default
     ports:
